@@ -1137,6 +1137,12 @@ bool mainGame(int m, int n, std::vector<FriendCharacter> friends, std::vector<En
         for (auto& pair : waitingQueue) {
             std::cout << pair.first->name_get() << " \t (代号 " << pair.first->code_get() << ")  \t剩余行动时间为： " << pair.first->time_get() << std::endl;
         }
+        if(team ==0){
+            std::cout<<"我方战技点为"<<FriendCharacter::skillpoint<<std::endl;
+        }
+        else{
+            std::cout<<"对方战技点为"<<EnemyCharacter::skillpoint<<std::endl;
+         }
         std::cout << std::endl;
         // 输出当前角色基础信息
         if (team == 0 && waitingQueue[0].second == 0) std::cout << "当前回合是我方 "  << friend_positionArray[turn] -> name_get() << "（代号 " << friend_positionArray[turn] -> code_get() << "） 角色的角色回合" << "，该角色位置为 " << turn << std::endl;
