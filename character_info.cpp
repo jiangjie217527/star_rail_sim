@@ -50,7 +50,7 @@ OriginCharacter::OriginCharacter(const std::vector<int>& level, std::optional<st
         element = int(base_value.value()[8]);
         energy_max = base_value.value()[7];
         hp_max = hp;
-        energy_restore = energy_max;
+        energy_restore = 0.5 * energy_max;
         shield = 0;
         penetrate = 0;
         name=CharacterName.value();
@@ -195,6 +195,8 @@ CombatCharacter::CombatCharacter(int id, int character_level, int basic_level, i
         this->talent_level = talent_level;
         this->rank = rank;
         status = std::vector<Status>();
+        if(id==1208) talent_point = 1;
+        else talent_point = 0;
 }
 CombatCharacter::~CombatCharacter(){
     
@@ -242,8 +244,7 @@ int CombatCharacter::talent_point_get() const {
     return talent_point; 
 }
 void CombatCharacter::updateStatus() {    // 在一回合结束后，skip执行
-    if (entity_id == 1001)
-        talent_point_add(2 - talent_point_get());
+
 
     for (auto it = status.begin(); it != status.end();) {
         it->duration_decrease();
