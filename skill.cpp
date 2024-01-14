@@ -818,6 +818,8 @@ short UltraFunction_1001(int from, int to, std::vector<CombatCharacter*>& FromCh
     double atk_result;
     double random_num = (double)rand() / RAND_MAX;
     {
+        //释放完终结技，能量清空
+        FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
         //暴击的攻击力效果
         if (random_num < FromCharacters[from]->crit_rate_get())
         {
@@ -856,8 +858,6 @@ short UltraFunction_1001(int from, int to, std::vector<CombatCharacter*>& FromCh
             //判断是否击杀了攻击对象并抹去击杀的对象(这里是对方全体的每一个)，击杀有回能
             short killresult = IfKill(from, i, FromCharacters, ToCharacters); }
         }
-    //释放完终结技，能量清空
-    FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     //能量回5
     FromCharacters[from]->energy_change(5);
     //返回0，表示终结技释放成功
@@ -935,6 +935,8 @@ short SkillFunction_1004(int from, int to, std::vector<CombatCharacter*>& FromCh
 short UltraFunction_1004(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters) {
     if (!IfUltraInvalid(from, to, FromCharacters, ToCharacters))
         return -2;
+    //终结技耗费全部能量
+    FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     double atk_result_origin = FromCharacters[from]->atk_get() * (0.84 + 0.06 * FromCharacters[from]->BPSkill_level_get());//伤害描述相关
     double atk_result;
     double random_num = (double)rand() / RAND_MAX;
@@ -987,8 +989,6 @@ short UltraFunction_1004(int from, int to, std::vector<CombatCharacter*>& FromCh
    //判断是否击杀了攻击对象并抹去击杀的对象，击杀有回能
     for(int i=0;i<ToCharacters.size();i++){
         IfKill(from, i, FromCharacters, ToCharacters);}
-    //终结技耗费全部能量
-    FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     //终结技回复能量5点
     FromCharacters[from]->energy_change(5);
     //返回0表示终结技释放成功
@@ -1117,9 +1117,10 @@ void UltraFunction_1006_removeDefensedrop(CombatCharacter& character, double val
 
 };
 short UltraFunction_1006(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters) {
-    std::cout << "行动执行：银狼释放终结技 " << "|账号已封禁|" << std::endl;
     if (!IfUltraInvalid(from, to, FromCharacters, ToCharacters))
         return -2;
+    FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
+    std::cout << "行动执行：银狼释放终结技 " << "|账号已封禁|" << std::endl;
     //防御与攻击的计算
     double atk_result_origin = FromCharacters[from]->atk_get() * (2.128 + 0.152 * FromCharacters[from]->ultra_level_get());
     double def = (FromCharacters[from]->character_level_get() * 10 + 200) / (ToCharacters[to]->def_get() + (FromCharacters[from]->character_level_get() * 10 + 200));
@@ -1158,7 +1159,6 @@ short UltraFunction_1006(int from, int to, std::vector<CombatCharacter*>& FromCh
     }
 
     IfKill(from, to, FromCharacters, ToCharacters);
-    FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     FromCharacters[from]->energy_change(5);
 
 
@@ -1292,9 +1292,10 @@ short SkillFunction_1208(int from, int to, std::vector<CombatCharacter*>& FromCh
     return 1;
 }
 short UltraFunction_1208(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters) {
+    if (!IfUltraInvalid(from, to, FromCharacters, FromCharacters)) { return -2; }
+    FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     std::cout << "行动执行：符玄释放终结技 " << "天律大衍，历劫归一" << std::endl;
     std::cout << "触发效果：获得1次触发符玄天赋生命回复的机会" << std::endl;
-    if (!IfUltraInvalid(from, to, FromCharacters, FromCharacters)) { return -2; }
     double hp_max_result;
     double def_result;
     //生成一个0-1的随机数
@@ -1319,7 +1320,6 @@ short UltraFunction_1208(int from, int to, std::vector<CombatCharacter*>& FromCh
     if (FromCharacters[from]->talent_point_get() > 2) {
         FromCharacters[from]->talent_point_add(2 - FromCharacters[from]->talent_point_get());
     };
-    FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     FromCharacters[from]->energy_change(5);
 
 
@@ -1347,6 +1347,7 @@ void UltraFunction_1211_removeShengxi(CombatCharacter& character, double value) 
 }
 short UltraFunction_1211(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters) {
     if (!IfUltraInvalid(from, to, FromCharacters, FromCharacters)) { return -2; }
+    FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     // 治疗效果
     double heal_value = (0.0844 + FromCharacters[from]->ultra_level_get() * 0.0056) * FromCharacters[from]->hp_max_get()
         + (-0.8994 * FromCharacters[from]->ultra_level_get() * FromCharacters[from]->ultra_level_get() + 38.859 * FromCharacters[from]->ultra_level_get() + 69.928);
@@ -1372,7 +1373,6 @@ short UltraFunction_1211(int from, int to, std::vector<CombatCharacter*>& FromCh
             Status* lastone = &FromCharacters[i]->status.back();
             lastone->apply(*FromCharacters[i], 0);
         }
-    FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     FromCharacters[from]->energy_change(5);
     std::cout << "行动执行：白露释放终结技 " << "匏蛟跃渊先雷音" << std::endl;
     std::cout << "触发效果：为白露方全体回复生命值、附加\"生息\"状态";
@@ -1489,6 +1489,7 @@ short SkillFunction_1107(int from, int to, std::vector<CombatCharacter*>& FromCh
 }
 short UltraFunction_1107(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters) {
     if (!IfUltraInvalid(from, to, FromCharacters, FromCharacters)) { return -2; }
+    FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     //克拉拉天赋得到强化
     FromCharacters[from]->talent_point_add(2 - FromCharacters[from]->talent_point_get());
     //克拉拉大招减伤效果的应用和移除
@@ -1497,7 +1498,6 @@ short UltraFunction_1107(int from, int to, std::vector<CombatCharacter*>& FromCh
     FromCharacters[from]->status.push_back(Ultra_1107);
     Status* lastone = &FromCharacters[from]->status.back();
     lastone->apply(*FromCharacters[from], 0);
-    FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     FromCharacters[from]->energy_change(5);
 
     std::cout << "行动执行：克拉拉释放终结技 " << "是约定不是命令" << std::endl;
@@ -1563,9 +1563,10 @@ short SkillFunction_1003(int from, int to, std::vector<CombatCharacter*>& FromCh
     return 1;
 }
 short UltraFunction_1003(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters) {
+    if (!IfUltraInvalid(from, to, FromCharacters, FromCharacters)) { return -2; }
+    FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     std::cout << "行动执行：姬子释放终结技 " << "天坠之火" << std::endl;
     std::cout << "触发效果：每消灭1个敌方目标额外恢复姬子能量" << std::endl;
-    if (!IfUltraInvalid(from, to, FromCharacters, FromCharacters)) { return -2; }
     double atk_result;
     double def_result;
     //生成一个0-1的随机数
@@ -1578,7 +1579,6 @@ short UltraFunction_1003(int from, int to, std::vector<CombatCharacter*>& FromCh
     for (int i = 0; i < ToCharacters.size() - 1; i++) {
         def_result = (FromCharacters[from]->character_level_get() * 10 + 200) / (ToCharacters[i]->def_get() + (FromCharacters[from]->character_level_get() * 10 + 200));
         double damage = atk_result * def_result * (1 + FromCharacters[from]->penetrate_get() - ToCharacters[i]->vulnerability_get(FromCharacters[from]->element_get()));
-        FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
         DamageResult(from, i, FromCharacters, ToCharacters, damage);
         //姬子大招：每消灭一个敌方目标恢复五点能量
         if (ToCharacters[i]->hp_get() <= 0) {
@@ -1634,6 +1634,7 @@ short SkillFunction_1102(int from, int to, std::vector<CombatCharacter*>& FromCh
 }
 short UltraFunction_1102(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters) {
     if (!IfUltraInvalid(from, to, FromCharacters, FromCharacters)) { return -2; }
+    FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     //放大招立刻增伤
     status_clear(FromCharacters[from], std::string("希儿增幅状态"));
     Status Seele_increase_damage(to, from, 0.36 + 0.04 * FromCharacters[from]->talent_level_get(), std::string("希儿增幅状态"), 1, [](CombatCharacter& character, double value) {}, [](CombatCharacter& character, double value) {});
@@ -1663,7 +1664,6 @@ short UltraFunction_1102(int from, int to, std::vector<CombatCharacter*>& FromCh
         DamageResult(from, to, FromCharacters, ToCharacters, damage * (1 + 0.36 + 0.04 * FromCharacters[from]->talent_level_get()));
     else
         DamageResult(from, to, FromCharacters, ToCharacters, damage);
-    FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     FromCharacters[from]->energy_change(5);
 
     short killresult = IfKill(from, to, FromCharacters, ToCharacters);
