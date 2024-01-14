@@ -639,7 +639,6 @@ bool Execute(std::string input, int m, int n, bool team, int turn, std::vector<F
             break;
         }
     }
-    std::cout<<command<<" "<<characterIndex<<" "<<skill<<" "<<targetIndex<<" "<<cnt<<std::endl;
     if(cnt!=4){
         std::cin.sync();
         std::cerr << "输入的指令数据不合法(参数过多)，请您重新输入！" << std::endl;
@@ -1164,7 +1163,6 @@ bool mainGame(int m, int n, std::vector<FriendCharacter> friends, std::vector<En
         std::string input;
         std::cout << "请您输入操作指令: ";
         std::getline(std::cin, input);   // 获取一行输入
-        std::cout<<input<<std::endl;
         // 根据输入调用对应函数（执行技能，查找信息，跳过回合）
         if (input.find("execute") == 0) {
             int skill_res = Execute(input, m, n, team, code, friend_positionArray, enemy_positionArray, waitingQueue, deathArray, flag);
