@@ -618,7 +618,18 @@ void DamageResult(int from, int to, std::vector<CombatCharacter*>& FromCharacter
     DamageResult_with_Clara_talent(from, to, FromCharacters, ToCharacters, damage);
     //检查符玄的天赋是否触发：是否进行生命恢复
     DamageResult_with_Fuxuan_talent(from, to, FromCharacters, ToCharacters, damage);
+    int WhereIsFuxuan2 = -1;
+    for (int i = 0; i < FromCharacters.size(); i++) {
+        if (FromCharacters[i]->entity_id_get() == 1208) {
+            iffuxuan = true;
+            WhereIsFuxuan2 = i;
+            break;
+        }
     }
+    if(WhereIsFuxuan2 != -1){
+        IfKill(from,WhereIsFuxuan2,FromCharacters,ToCharacters);
+    }
+}
 
 //用于计算非目标的防御力
 double Exact_def(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters)
