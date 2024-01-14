@@ -846,22 +846,24 @@ short UltraFunction_1001(int from, int to, std::vector<CombatCharacter*>& FromCh
         {
             double random_frozen = (double)rand() / RAND_MAX;//随机数判断是否进行冰冻，
             
-                //冰冻的实际概率=基础概率*(1+效果命中)*(1-效果抵抗)
-                //当0~1均匀分布的随机数小于实际概率时，我们认为这次判定中，冰冻应该生效
-                //亮点：利用0~1均匀分布的随机数，与实际概率比较，实现足够随机性，有实际概率意义的判断
-                if (random_frozen < 0.5*(1+FromCharacters[from]->effect_hit_rate_get())*(1-ToCharacters[j]->effect_resist_get()))
-                {
-                    //施加冰冻状态
-        Frozen(from, j, FromCharacters, ToCharacters);
-        std::cout << ToCharacters[j]->name_get() << " ";
-                }
+            //冰冻的实际概率=基础概率*(1+效果命中)*(1-效果抵抗)
+            //当0~1均匀分布的随机数小于实际概率时，我们认为这次判定中，冰冻应该生效
+            //亮点：利用0~1均匀分布的随机数，与实际概率比较，实现足够随机性，有实际概率意义的判断
+            if (random_frozen < 0.5*(1+FromCharacters[from]->effect_hit_rate_get())*(1-ToCharacters[j]->effect_resist_get()))
+            {
+            //施加冰冻状态
+            Frozen(from, j, FromCharacters, ToCharacters);
+            std::cout << ToCharacters[j]->name_get() << " ";
+            }
         }
         std::cout << "陷入冰冻状态" << std::endl;
         for (int i = 0; i < ToCharacters.size(); i++)
         {
             //判断是否击杀了攻击对象并抹去击杀的对象(这里是对方全体的每一个)，击杀有回能
-            short killresult = IfKill(from, i, FromCharacters, ToCharacters); }
+            short killresult = IfKill(from, i, FromCharacters, ToCharacters); 
+            if(killresult!=0)i--;
         }
+    }
     //能量回5
     FromCharacters[from]->energy_change(5);
     //返回0，表示终结技释放成功
@@ -996,8 +998,11 @@ short UltraFunction_1004(int from, int to, std::vector<CombatCharacter*>& FromCh
         
     }
    //判断是否击杀了攻击对象并抹去击杀的对象，击杀有回能
-    for(int i=0;i<ToCharacters.size();i++){
-        IfKill(from, i, FromCharacters, ToCharacters);}
+     for(int j = 0; j < ToCharacters.size(); j++){
+           if( IfKill(from, j, FromCharacters, ToCharacters)!=0){
+                j--;
+           }
+        }
     //终结技回复能量5点
     FromCharacters[from]->energy_change(5);
     //返回0表示终结技释放成功
@@ -1321,7 +1326,9 @@ short UltraFunction_1208(int from, int to, std::vector<CombatCharacter*>& FromCh
         DamageResult(from, i, FromCharacters, ToCharacters, damage);
     }
     for(int i=0;i<ToCharacters.size();i++){
-        IfKill(from, i, FromCharacters, ToCharacters);
+        if(IfKill(from, i, FromCharacters, ToCharacters)!=0){
+            i--;
+        }
     }
     //增加一点天赋触发次数
     FromCharacters[from]->talent_point_add(1);
@@ -1487,11 +1494,13 @@ short SkillFunction_1107(int from, int to, std::vector<CombatCharacter*>& FromCh
             //如果没有反击标志则造成正常伤害
             DamageResult(from, i, FromCharacters, ToCharacters, damage);
         }
-    }
-    for(int j = 0; j < ToCharacters.size(); j++){
-            IfKill(from, j, FromCharacters, ToCharacters);
+    }   
+    for (int i = 0; i < ToCharacters.size(); i++) {
+        if(IfKill(from, i, FromCharacters, ToCharacters)!=0){
+            i--;
         }
-    std::cout <<"共计"<<num_exact_attckback<<"个对象造成额外伤害" << std::endl;
+    }
+       std::cout <<"共计"<<num_exact_attckback<<"个对象造成额外伤害" << std::endl;
     FromCharacters[from]->energy_change(30);
 
     return 1;
@@ -1591,8 +1600,11 @@ short UltraFunction_1003(int from, int to, std::vector<CombatCharacter*>& FromCh
             FromCharacters[from]->energy_change(5);
         }
     }
-    for (int i = 0; i < ToCharacters.size() - 1; i++) {
-    IfKill(from, i, FromCharacters, ToCharacters);}
+    for (int i = 0; i < ToCharacters.size(); i++) {
+        if(IfKill(from, i, FromCharacters, ToCharacters)!=0){
+            i--;
+        }
+    }
 
     //放完大招清空
     FromCharacters[from]->energy_change(5);
