@@ -393,6 +393,7 @@ void DamageResult_with_Clara_talent(int from, int to, std::vector<CombatCharacte
             //添加反击标志，这里反击标志无法自行随回合数消失，故加了1000的duration，理论上不会在战斗结束前消失
             Status Clara_StrikeBack_Figure(from, to, 0.0, std::string("反击标志"), 1000, [](CombatCharacter& from, double value) {}, [](CombatCharacter& from, double value) {});
             FromCharacters[from]->status.push_back(Clara_StrikeBack_Figure);
+            IfKill(to,from,ToCharacters,FromCharacters);
             //恢复克拉拉的反击能力
             callCount++;
             //克拉拉的能量加5
@@ -444,6 +445,9 @@ void DamageResult_with_Clara_talent(int from, int to, std::vector<CombatCharacte
                 Status Clara_StrikeBack_Figure(from + 1, to, 0, std::string("反击标志"), 1000, [](CombatCharacter& from, double value) {}, [](CombatCharacter& from, double value) {});
                 FromCharacters[from + 1]->status.push_back(Clara_StrikeBack_Figure);
             }
+            IfKill(to,from,ToCharacters,FromCharacters);
+            if(from > 0)IfKill(to,from-1,ToCharacters,FromCharacters);
+            if(from < FromCharacters.size() - 1)IfKill(to,from+1,ToCharacters,FromCharacters);
 
             //恢复克拉拉的反击能力
             callCount++;
@@ -900,7 +904,9 @@ short SkillFunction_1004(int from, int to, std::vector<CombatCharacter*>& FromCh
     DamageResult(from, to, FromCharacters, ToCharacters,damage+TalentFunction_1004(from, to, FromCharacters, ToCharacters));
     //判断是否击杀了攻击对象并抹去击杀的对象，击杀有回能
     IfKill(from, to, FromCharacters, ToCharacters);
-
+    if(ToCharacters.size()==0){
+        return 1;
+    }
     for (int i = 0; i < 2; i++)
     //接下来是两次随机的攻击，对象换为随机，其他相同
     {
@@ -927,6 +933,9 @@ short SkillFunction_1004(int from, int to, std::vector<CombatCharacter*>& FromCh
 
         //判断是否击杀了攻击对象并抹去击杀的对象，击杀有回能
         IfKill(from, random_object, FromCharacters, ToCharacters);
+        if(ToCharacters.size()==0){
+            return 1;
+        }
     }
     //战技回复能量30点
     FromCharacters[from]->energy_change(30);
@@ -1533,30 +1542,27 @@ short SkillFunction_1003(int from, int to, std::vector<CombatCharacter*>& FromCh
         else if (to == 0)
         {
             DamageResult(from, to, FromCharacters, ToCharacters, atk_result * Exact_def(from, to, FromCharacters, ToCharacters));
-            IfKill(from, to, FromCharacters, ToCharacters);
             if (ToCharacters.size() != 1)
             {
                 DamageResult(from, 1, FromCharacters, ToCharacters, 0.4 * atk_result * Exact_def(from, 1, FromCharacters, ToCharacters));
-                IfKill(from, 1, FromCharacters, ToCharacters);
             }
         }
         else if (to == ToCharacters.size() - 1)
         {
             DamageResult(from, to, FromCharacters, ToCharacters, atk_result * Exact_def(from, to, FromCharacters, ToCharacters));
             DamageResult(from, to - 1, FromCharacters, ToCharacters, 0.4 * atk_result * Exact_def(from, to - 1, FromCharacters, ToCharacters));
-            IfKill(from, to, FromCharacters, ToCharacters);
-            IfKill(from, to - 1, FromCharacters, ToCharacters);
         }
         else if (to > 0 && to < ToCharacters.size() - 1)
         {
             DamageResult(from, to, FromCharacters, ToCharacters, atk_result * Exact_def(from, to, FromCharacters, ToCharacters));
             DamageResult(from, to - 1, FromCharacters, ToCharacters, 0.4 * atk_result * Exact_def(from, to - 1, FromCharacters, ToCharacters));
             DamageResult(from, to + 1, FromCharacters, ToCharacters, 0.4 * atk_result * Exact_def(from, to + 1, FromCharacters, ToCharacters));
-            IfKill(from, to, FromCharacters, ToCharacters);
-            IfKill(from, to - 1, FromCharacters, ToCharacters);
-            IfKill(from, to + 1, FromCharacters, ToCharacters);
         }
     }
+    
+    IfKill(from, to, FromCharacters, ToCharacters);
+    if(to > 0)IfKill(from, to - 1, FromCharacters, ToCharacters);
+    if(to < ToCharacters.size()-1)IfKill(from, to + 1, FromCharacters, ToCharacters);
     FromCharacters[from]->energy_change(30);
 
 
