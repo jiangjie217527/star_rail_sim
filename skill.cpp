@@ -348,12 +348,13 @@ void DamageResult_with_March7_talent(int from, int to, std::vector<CombatCharact
         double damage_March7_talent = atk_result * def_result
             * (1 + ToCharacters[where_is_march7]->penetrate_get() - FromCharacters[from]->vulnerability_get(ToCharacters[where_is_march7]->element_get()));
             //调用DamageResult函数，结算伤害，反击攻击者三月七
+            std::cout << "三月七触发天赋 少女的特权，对"<<FromCharacters[from]->name_get()<<"反击"<< std::endl;
         DamageResult(where_is_march7, from, ToCharacters, FromCharacters, damage_March7_talent);
+        IfKill(where_is_march7, from, ToCharacters, FromCharacters);
             //三月七的反击天赋点数减一
         ToCharacters[where_is_march7]->talent_point_add(-1);
             //三月七的能量加10
         ToCharacters[where_is_march7]->energy_change(10);
-        std::cout << "三月七触发天赋 少女的特权，对"<<FromCharacters[from]->name_get()<<"反击"<< std::endl;
         return;
     }
     else
@@ -385,6 +386,7 @@ void DamageResult_with_Clara_talent(int from, int to, std::vector<CombatCharacte
                 //效果相乘，并加上攻击者(克拉拉)元素穿透与受击者(From[from])对应的元素抗性(也就是对克拉拉的物理元素伤害的抗性)
             double damage_Clara_talent = atk_result * def_result
                 * (1 + ToCharacters[to]->penetrate_get() - FromCharacters[from]->vulnerability_get(ToCharacters[to]->element_get()));
+            std::cout << "触发克拉拉天赋 因为我们是家人"<<"(效果:对"<<FromCharacters[from]->name_get()<<"反击并施加\"反击标志\" ) "<< std::endl;
             DamageResult(to, from, ToCharacters, FromCharacters, damage_Clara_talent);
             //检查是否已经有了反击标志这一状态，有则清楚，重新添加
             status_clear(FromCharacters[from],std::string("反击标志"));
@@ -395,12 +397,12 @@ void DamageResult_with_Clara_talent(int from, int to, std::vector<CombatCharacte
             callCount++;
             //克拉拉的能量加5
             FromCharacters[from]->energy_change(5);
-            std::cout << "触发克拉拉天赋 因为我们是家人"<<"(效果:对"<<FromCharacters[from]->name_get()<<"反击并施加\"反击标志\" ) "<< std::endl;
 
         }
 
         else//进行强化反击
         {
+            std::cout << "克拉拉触发天赋 因为我们是家人"<<"(触发效果:对"<<FromCharacters[from]->name_get()<<"及其相邻目标强化反击施加\"反击标志\" ) "<< std::endl;
             //克拉拉的大招点数减一
             ToCharacters[to]->talent_point_add(-1);
             //暂时抑制克拉拉在反击过程中的反击能力，限制二次反击
@@ -424,7 +426,6 @@ void DamageResult_with_Clara_talent(int from, int to, std::vector<CombatCharacte
             status_clear(FromCharacters[from],std::string("反击标志"));
             Status Clara_StrikeBack_Figure(from, to, 0, std::string("反击标志"), 1000, [](CombatCharacter& from, double value) {}, [](CombatCharacter& from, double value) {});
             FromCharacters[from]->status.push_back(Clara_StrikeBack_Figure);
-
             if (from > 0)//判断反击主目标左侧是否有对象，有，则对左侧这一对象扩散50%对主目标的伤害
             {
                 //对左侧这一对象扩散50%对主目标的伤害
@@ -443,7 +444,6 @@ void DamageResult_with_Clara_talent(int from, int to, std::vector<CombatCharacte
                 Status Clara_StrikeBack_Figure(from + 1, to, 0, std::string("反击标志"), 1000, [](CombatCharacter& from, double value) {}, [](CombatCharacter& from, double value) {});
                 FromCharacters[from + 1]->status.push_back(Clara_StrikeBack_Figure);
             }
-                std::cout << "克拉拉触发天赋 因为我们是家人"<<"(触发效果:对"<<FromCharacters[from]->name_get()<<"及其相邻目标施加\"反击标志\" ) "<< std::endl;
 
             //恢复克拉拉的反击能力
             callCount++;
@@ -748,6 +748,7 @@ short NormalFunction_1(int from, int to, std::vector<CombatCharacter*>& FromChar
 // 普攻的第二种情况，用于符玄普通攻击的
 short NormalFunction_2(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters)
 {
+    std::cout << "行动执行：符玄" << "释放普攻 始击岁星" << std::endl;
     double hpatk_result;
     double def_result;
     //生成一个0-1的随机数
@@ -769,7 +770,6 @@ short NormalFunction_2(int from, int to, std::vector<CombatCharacter*>& FromChar
     FromCharacters[from]->energy_change(20);
     KaiQiQiongguanDeFuXuan(FromCharacters);
     //检查穷观阵效果是否失效
-    std::cout << "行动执行：符玄" << "释放普攻 始击岁星" << std::endl;
     return 1;
 }
 
@@ -1021,8 +1021,9 @@ double TalentFunction_1004(int from, int to, std::vector<CombatCharacter*>& From
             break;
         }
     }
-    if(damage!=0) std::cout<<ToCharacters[to]->name_get()<<" ";
+    if(damage!=0) std::cout<<ToCharacters[to]->name_get();
     else std::cout<<"无人";
+    std::cout <<"造成额外伤害)"<< std::endl;
     return damage;
 }
 // 银狼
@@ -1086,7 +1087,7 @@ short SkillFunction_1006(int from, int to, std::vector<CombatCharacter*>& FromCh
         std::vector<std::string> Element = {"Fire","Ice","Wind","Quantum","Physical","Thunder","Imaginary"};
         std::cout <<"为"<<ToCharacters[to]->name_get()<<"施加"<<Element[random_weak]<<"弱点,降低对应抗性" << std::endl;
     }
-
+    std::cout <<"对"<<ToCharacters[to]->name_get()<<"造成伤害"<<std::endl;
     //生成一个0-1的随机数 判断暴击与否
     double random_num = (double)rand() / RAND_MAX;
     if (random_num < FromCharacters[from]->crit_rate_get())
@@ -1116,6 +1117,7 @@ void UltraFunction_1006_removeDefensedrop(CombatCharacter& character, double val
 
 };
 short UltraFunction_1006(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters) {
+    std::cout << "行动执行：银狼释放终结技 " << "|账号已封禁|" << std::endl;
     if (!IfUltraInvalid(from, to, FromCharacters, ToCharacters))
         return -2;
     //防御与攻击的计算
@@ -1151,14 +1153,14 @@ short UltraFunction_1006(int from, int to, std::vector<CombatCharacter*>& FromCh
         ToCharacters[to]->status.push_back(DefensedropStatus);
         Status* lastone = &ToCharacters[to]->status.back();
         lastone->apply(*ToCharacters[to], Dropvalue);
+        std::cout << "触发效果：使" << ToCharacters[to]->name_get() << "防御力降低" << std::endl;
+
     }
 
     IfKill(from, to, FromCharacters, ToCharacters);
     FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     FromCharacters[from]->energy_change(5);
 
-    std::cout << "行动执行：银狼释放终结技 " << "|账号已封禁|" << std::endl;
-    std::cout << "触发效果：使" << ToCharacters[to]->name_get() << "防御力降低" << std::endl;
 
     return 0;
 }
@@ -1239,7 +1241,7 @@ void KaiQiQiongguanDeFuXuan(std::vector<CombatCharacter*>& FromCharacters)
     bool ifQiongguan = false;
     if (iffuxuan && WhereIsFuxuan2 != -1) {
         for (int i = 0; i < FromCharacters[WhereIsFuxuan2]->status.size(); i++) {
-            if (FromCharacters[WhereIsFuxuan2]->status[i].name_get() == "穷观阵") {
+            if (FromCharacters[WhereIsFuxuan2]->status[i].name_get() == "穷观阵"&&FromCharacters[WhereIsFuxuan2]->status[i].duration_get()>1) {
                 ifQiongguan = true;
                 break;
             }
@@ -1265,8 +1267,8 @@ void KaiQiQiongguanDeFuXuan(std::vector<CombatCharacter*>& FromCharacters)
 
     {   //失去效果
         for (int i = 0; i < FromCharacters.size(); i++) {
-            FromCharacters[i]->hp_change_max(-(FromCharacters[i]->hp_max_get() +
-                ((0.027 + 0.003 * FromCharacters[WhereIsFuxuan2]->BPSkill_level_get()) * FromCharacters[WhereIsFuxuan2]->hp_max_get())));
+            FromCharacters[i]->hp_change_max((
+                -((0.027 + 0.003 * FromCharacters[WhereIsFuxuan2]->BPSkill_level_get()) * FromCharacters[WhereIsFuxuan2]->hp_max_get())));
             if (FromCharacters[i]->hp_get() > FromCharacters[i]->hp_max_get())
                 FromCharacters[i]->hp_decrease(FromCharacters[i]->hp_get() - FromCharacters[i]->hp_max_get());
             FromCharacters[i]->crit_rate_change(-(0.054 + 0.006 * FromCharacters[WhereIsFuxuan2]->BPSkill_level_get()));
@@ -1278,7 +1280,7 @@ void KaiQiQiongguanDeFuXuan(std::vector<CombatCharacter*>& FromCharacters)
 }
 short SkillFunction_1208(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters) {
     status_clear(FromCharacters[from], std::string("穷观阵"));
-    Status FuxuanQiongguanzhen(to, from, 0.0, std::string("穷观阵"), 3, [](CombatCharacter&, double) {}, [](CombatCharacter&, double) {});
+    Status FuxuanQiongguanzhen(to, from, 0.0, std::string("穷观阵"), 4, [](CombatCharacter&, double) {}, [](CombatCharacter&, double) {});
     FromCharacters[from]->status.push_back(FuxuanQiongguanzhen);
     Status* lastone = &FromCharacters[from]->status.back();
     lastone->apply(*FromCharacters[from], 0.00);
@@ -1290,6 +1292,8 @@ short SkillFunction_1208(int from, int to, std::vector<CombatCharacter*>& FromCh
     return 1;
 }
 short UltraFunction_1208(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters) {
+    std::cout << "行动执行：符玄释放终结技 " << "天律大衍，历劫归一" << std::endl;
+    std::cout << "触发效果：获得1次触发符玄天赋生命回复的机会" << std::endl;
     if (!IfUltraInvalid(from, to, FromCharacters, FromCharacters)) { return -2; }
     double hp_max_result;
     double def_result;
@@ -1318,8 +1322,7 @@ short UltraFunction_1208(int from, int to, std::vector<CombatCharacter*>& FromCh
     FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     FromCharacters[from]->energy_change(5);
 
-    std::cout << "行动执行：符玄释放终结技 " << "天律大衍，历劫归一" << std::endl;
-    std::cout << "触发效果：获得1次触发符玄天赋生命回复的机会" << std::endl;
+
 
     return 0;
 }
@@ -1448,7 +1451,7 @@ short SkillFunction_1107(int from, int to, std::vector<CombatCharacter*>& FromCh
     else
         atk_result = FromCharacters[from]->atk_get() * (0.54 + 0.06 * (FromCharacters[from]->BPSkill_level_get()));
     std::cout << "行动执行：克拉拉" << "释放战技 史瓦罗在看着你"<< std::endl;
-    std::cout <<"触发效果：对有反击标记的";
+    std::cout <<"触发效果：对有反击标记的"<<std::endl;
     //伤害的计算
     int num_exact_attckback=0;
     for (int i = 0; i < ToCharacters.size(); i++) {
@@ -1468,7 +1471,7 @@ short SkillFunction_1107(int from, int to, std::vector<CombatCharacter*>& FromCh
         if (ifClara_StrikeBack_Figure == true && Status_Position_of_Clara_StrikeBack != -1) {
             DamageResult(from, i, FromCharacters, ToCharacters, damage * 2);
             ToCharacters[i]->status.erase(ToCharacters[i]->status.begin() + Status_Position_of_Clara_StrikeBack);
-            std::cout<<ToCharacters[i]->name_get()<<" ";
+            std::cout<<ToCharacters[i]->name_get()<<" "<<std::endl;
             num_exact_attckback++;
         }
         else {
@@ -1521,7 +1524,8 @@ short SkillFunction_1003(int from, int to, std::vector<CombatCharacter*>& FromCh
             atk_result = Fire_Value * (1 + FromCharacters[from]->penetrate_get() - (ToCharacters[to]->vulnerability_get(FromCharacters[from]->element_get())));
         }
     }
-
+    std::cout << "行动执行：姬子释放战技 " << "熔核爆裂" << std::endl;
+    std::cout << "触发效果：对" << ToCharacters[to] << "及其相邻对象造成伤害" << std::endl;
     {
         //扩散伤害，需要计算与目标相邻的对象的防御力，同时要防止虚空索敌(即to==0时打到-1的对象)，因此分类讨论
         if (to < 0 || to >= ToCharacters.size())
@@ -1554,12 +1558,13 @@ short SkillFunction_1003(int from, int to, std::vector<CombatCharacter*>& FromCh
         }
     }
     FromCharacters[from]->energy_change(30);
-    std::cout << "行动执行：姬子释放战技 " << "熔核爆裂" << std::endl;
-    std::cout << "触发效果：对" << ToCharacters[to] << "及其相邻对象造成伤害" << std::endl;
+
 
     return 1;
 }
 short UltraFunction_1003(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters) {
+    std::cout << "行动执行：姬子释放终结技 " << "天坠之火" << std::endl;
+    std::cout << "触发效果：每消灭1个敌方目标额外恢复姬子能量" << std::endl;
     if (!IfUltraInvalid(from, to, FromCharacters, FromCharacters)) { return -2; }
     double atk_result;
     double def_result;
@@ -1585,9 +1590,7 @@ short UltraFunction_1003(int from, int to, std::vector<CombatCharacter*>& FromCh
     //放完大招清空
     FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     FromCharacters[from]->energy_change(5);
-    
-    std::cout << "行动执行：姬子释放终结技 " << "天坠之火" << std::endl;
-    std::cout << "触发效果：每消灭1个敌方目标额外恢复姬子能量" << std::endl;
+
 
     return 0;
 
@@ -1613,11 +1616,11 @@ short SkillFunction_1102(int from, int to, std::vector<CombatCharacter*>& FromCh
         atk_result = FromCharacters[from]->atk_get() * (0.99 + 0.11 * (FromCharacters[from]->BPSkill_level_get()));
     def_result = (FromCharacters[from]->character_level_get() * 10 + 200) / (ToCharacters[to]->def_get() + (FromCharacters[from]->character_level_get() * 10 + 200));
     double damage = atk_result * def_result * (1 + FromCharacters[from]->penetrate_get() - ToCharacters[to]->vulnerability_get(FromCharacters[from]->element_get()));
-
+    std::cout << "行动执行：希儿" << "释放战技 归刃"<< std::endl;
+    std::cout <<"触发效果：使希儿速度提高";    
     DamageResult(from, to, FromCharacters, ToCharacters, damage);
     FromCharacters[from]->energy_change(30);
-    std::cout << "行动执行：希儿" << "释放战技 归刃"<< std::endl;
-    std::cout <<"触发效果：使希儿速度提高";    //之前写了Ifkill，如果是希儿击杀目标，则killresult>1
+    //之前写了Ifkill，如果是希儿击杀目标，则killresult>1
     short killresult = IfKill(from, to, FromCharacters, ToCharacters);
     if (killresult > 1)
     {
@@ -1645,7 +1648,8 @@ short UltraFunction_1102(int from, int to, std::vector<CombatCharacter*>& FromCh
         atk_result = FromCharacters[from]->atk_get() * (2.38 + 0.17 * (FromCharacters[from]->ultra_level_get()));
     def_result = (FromCharacters[from]->character_level_get() * 10 + 200) / (ToCharacters[to]->def_get() + (FromCharacters[from]->character_level_get() * 10 + 200));
     double damage = atk_result * def_result * (1 + FromCharacters[from]->penetrate_get() - ToCharacters[to]->vulnerability_get(FromCharacters[from]->element_get()));
-
+    std::cout << "行动执行：希儿" << "释放终结技 乱蝶"<< std::endl;
+    std::cout <<"触发效果：使希儿立刻进入增幅状态";
     bool if_Seele_increase_damage = false;
     //增伤状态判定
     for (auto i : FromCharacters[from]->status) {
@@ -1661,8 +1665,7 @@ short UltraFunction_1102(int from, int to, std::vector<CombatCharacter*>& FromCh
         DamageResult(from, to, FromCharacters, ToCharacters, damage);
     FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     FromCharacters[from]->energy_change(5);
-    std::cout << "行动执行：希儿" << "释放终结技 乱蝶"<< std::endl;
-    std::cout <<"触发效果：使希儿立刻进入增幅状态";
+
     short killresult = IfKill(from, to, FromCharacters, ToCharacters);
     if (killresult > 1) { return 2; }
     return 0;
