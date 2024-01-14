@@ -1145,7 +1145,10 @@ bool mainGame(int m, int n, std::vector<FriendCharacter> friends, std::vector<En
         else if (team != 0 && waitingQueue[0].second == 1) std::cout << "当前回合是对方 " << enemy_positionArray[turn] -> name_get() << "（代号 " << enemy_positionArray[turn] -> code_get() << "） 角色的额外回合" << "，该角色位置为 " << turn << std::endl;
         
         // 判断当前回合角色的异常状态，如果角色被冻结，则自动跳过此回合
-        if (check_frozen(shortestTimeCharacter)) skip_res = Skip(waitingQueue, true);
+        if (check_frozen(shortestTimeCharacter)) {
+            skip_res = Skip(waitingQueue, true);
+            return false;
+        }
         
         // 输出当前角色可释放的技能信息
         check_skill(code, code, m, n, friend_positionArray, enemy_positionArray, waitingQueue, flag);
