@@ -1016,7 +1016,7 @@ double TalentFunction_1004(int from, int to, std::vector<CombatCharacter*>& From
                 atk_result = FromCharacters[from]->atk_get() * (0.27 + 0.03 * (FromCharacters[from]->talent_level_get())) * (1 + FromCharacters[from]->crit_DMG_get());
             else
                 atk_result = FromCharacters[from]->atk_get() * (0.27 + 0.03 * (FromCharacters[from]->talent_level_get()));
-            def_result = (FromCharacters[from]->character_level_get() * 10 + 200) / (ToCharacters[i]->def_get() + (FromCharacters[from]->character_level_get() * 10 + 200));
+            def_result = (FromCharacters[from]->character_level_get() * 10 + 200) / (ToCharacters[to]->def_get() + (FromCharacters[from]->character_level_get() * 10 + 200));
             damage = atk_result * def_result * (1 + FromCharacters[from]->penetrate_get() - ToCharacters[to]->vulnerability_get(FromCharacters[from]->element_get()));
             break;
         }
