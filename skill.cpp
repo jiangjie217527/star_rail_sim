@@ -1578,6 +1578,7 @@ short UltraFunction_1003(int from, int to, std::vector<CombatCharacter*>& FromCh
     for (int i = 0; i < ToCharacters.size() - 1; i++) {
         def_result = (FromCharacters[from]->character_level_get() * 10 + 200) / (ToCharacters[i]->def_get() + (FromCharacters[from]->character_level_get() * 10 + 200));
         double damage = atk_result * def_result * (1 + FromCharacters[from]->penetrate_get() - ToCharacters[i]->vulnerability_get(FromCharacters[from]->element_get()));
+        FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
         DamageResult(from, i, FromCharacters, ToCharacters, damage);
         //姬子大招：每消灭一个敌方目标恢复五点能量
         if (ToCharacters[i]->hp_get() <= 0) {
@@ -1588,7 +1589,6 @@ short UltraFunction_1003(int from, int to, std::vector<CombatCharacter*>& FromCh
     IfKill(from, i, FromCharacters, ToCharacters);}
 
     //放完大招清空
-    FromCharacters[from]->energy_change(-FromCharacters[from]->energy_restore_get());
     FromCharacters[from]->energy_change(5);
 
 
