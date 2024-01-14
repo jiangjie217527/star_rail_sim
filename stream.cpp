@@ -563,7 +563,7 @@ void Query(std::string input, int turn, int m, int n, std::vector<FriendCharacte
         std::cerr << "信息检索失败，请您重新输入！" << std::endl;
         return;
     }
-    CombatCharacter* characterPtr = team == 0 ? friendCombatArray[from] : enemyCombatArray[from - m];
+    CombatCharacter* characterPtr = team == 0 ? friendCombatArray[from_position] : enemyCombatArray[from_position];
     
     // 根据传入指令调用相应函数
     if (option == "status") {
@@ -571,7 +571,7 @@ void Query(std::string input, int turn, int m, int n, std::vector<FriendCharacte
         check_status(characterPtr);
     } else if (option == "health" || option == "shield" || option == "attack" || option == "defence" || option == "energy" || option == "skillpoint" || option == "speed" || option == "crit_rate" || option == "crit_DMG" || option == "penetrate" || option == "all" || option == "simple"){
         std::cout << "信息检索成功： ";
-        check_attribute(characterPtr, option, team == 0 ? friend_positionArray[from] -> skillpoint : enemy_positionArray[from - m] -> skillpoint);
+        check_attribute(characterPtr, option, team == 0 ? friend_positionArray[from_position] -> skillpoint : enemy_positionArray[from_position] -> skillpoint);
     } else if (option == "skill"){
         std::cout << "信息检索成功： ";
         check_skill(from, turn, m, n, friend_positionArray, enemy_positionArray, waitingQueue, flag);
