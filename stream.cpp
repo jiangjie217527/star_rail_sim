@@ -1135,7 +1135,7 @@ bool mainGame(int m, int n, std::vector<FriendCharacter> friends, std::vector<En
         // 输出进度条
         std::cout << "角色行动条：" << std::endl;
         for (auto& pair : waitingQueue) {
-            std::cout << pair.first->name_get() << " \t(代号 " << pair.first->code_get() << ")  \t剩余行动时间为： " << pair.first->time_get() << std::endl;
+            std::cout << pair.first->name_get() << " \t (代号 " << pair.first->code_get() << ")  \t剩余行动时间为： " << pair.first->time_get() << std::endl;
         }
         std::cout << std::endl;
         // 输出当前角色基础信息
