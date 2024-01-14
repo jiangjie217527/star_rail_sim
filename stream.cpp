@@ -1147,6 +1147,7 @@ bool mainGame(int m, int n, std::vector<FriendCharacter> friends, std::vector<En
         // 判断当前回合角色的异常状态，如果角色被冻结，则自动跳过此回合
         if (check_frozen(shortestTimeCharacter)) {
             skip_res = Skip(waitingQueue, true);
+            passTime(waitingQueue);
             return false;
         }
         
