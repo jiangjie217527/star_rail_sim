@@ -755,9 +755,9 @@ short NormalFunction_2(int from, int to, std::vector<CombatCharacter*>& FromChar
     double random_num = (double)rand() / RAND_MAX;
         //用生命值计算“攻击效果”
     if (random_num < FromCharacters[from]->crit_rate_get())
-        hpatk_result = FromCharacters[from]->hp_max_get() * (0.4 + 0.1 * (FromCharacters[from]->basic_level_get())) * (1 + FromCharacters[from]->crit_DMG_get());
+        hpatk_result = FromCharacters[from]->hp_max_get() * (0.2 + 0.05 * (FromCharacters[from]->basic_level_get())) * (1 + FromCharacters[from]->crit_DMG_get());
     else
-        hpatk_result = FromCharacters[from]->hp_max_get() * (0.4 + 0.1 * (FromCharacters[from]->basic_level_get()));
+        hpatk_result = FromCharacters[from]->hp_max_get() * (0.2 + 0.05 * (FromCharacters[from]->basic_level_get()));
     def_result = (FromCharacters[from]->character_level_get() * 10 + 200) / (ToCharacters[to]->def_get() + (FromCharacters[from]->character_level_get() * 10 + 200));
         //计算伤害(包括防御力效果，元素穿透与元素抗性)
     double damage = hpatk_result * def_result*(1+FromCharacters[from]->penetrate_get()-ToCharacters[to]->vulnerability_get(FromCharacters[from]->element_get()));
