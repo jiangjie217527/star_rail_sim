@@ -350,11 +350,12 @@ void DamageResult_with_March7_talent(int from, int to, std::vector<CombatCharact
             //调用DamageResult函数，结算伤害，反击攻击者三月七
             std::cout << "三月七触发天赋 少女的特权，对"<<FromCharacters[from]->name_get()<<"反击"<< std::endl;
         DamageResult(where_is_march7, from, ToCharacters, FromCharacters, damage_March7_talent);
-        IfKill(where_is_march7, from, ToCharacters, FromCharacters);
+
             //三月七的反击天赋点数减一
         ToCharacters[where_is_march7]->talent_point_add(-1);
             //三月七的能量加10
         ToCharacters[where_is_march7]->energy_change(10);
+        If_Kill_back(where_is_march7, from, ToCharacters, FromCharacters);
         return;
     }
     else
@@ -366,8 +367,15 @@ void DamageResult_with_Clara_talent(int from, int to, std::vector<CombatCharacte
 {
     //亮点：这里的静态变量是为了在反击过程中暂时限制二次反击，尤其是克拉拉攻击克拉拉的时候，防止出现连续反击(即对反击伤害进行反击)
     static int callCount = 1;
-    if (ToCharacters[to]->entity_id_get() == 1107 && callCount > 0&&ToCharacters[to]->hp_get()>0) {
-        if (ToCharacters[to]->talent_point_get() <= 0)//判断大招点数，是否进行强化反击(这里是不)
+    int where_is_Clara = -1;
+    int where_is_another_Clara = -1;
+    for(int i=0;i<ToCharacters.size();i++){
+        if(ToCharacters[i]->entity_id_get()==1107){
+            where_is_Clara = i;
+            break;
+    }}
+    if ( where_is_Clara != -1  && callCount >0&&ToCharacters[where_is_Clara]->hp_get()>0) {
+        if (ToCharacters[to]->entity_id_get() == 1107 &&ToCharacters[to]->talent_point_get() <= 0)//判断大招点数，是否进行强化反击(这里是不)
         {
             ToCharacters[to]->talent_point_add(-ToCharacters[to]->talent_point_get());
             callCount--;//暂时抑制克拉拉在反击过程中反击能力，限制二次反击
@@ -393,65 +401,66 @@ void DamageResult_with_Clara_talent(int from, int to, std::vector<CombatCharacte
             //添加反击标志，这里反击标志无法自行随回合数消失，故加了1000的duration，理论上不会在战斗结束前消失
             Status Clara_StrikeBack_Figure(from, to, 0.0, std::string("反击标志"), 1000, [](CombatCharacter& from, double value) {}, [](CombatCharacter& from, double value) {});
             FromCharacters[from]->status.push_back(Clara_StrikeBack_Figure);
-            IfKill(to,from,ToCharacters,FromCharacters);
             //恢复克拉拉的反击能力
             callCount++;
             //克拉拉的能量加5
             FromCharacters[from]->energy_change(5);
+            If_Kill_back(to, from, ToCharacters, FromCharacters);
 
         }
 
-        else//进行强化反击
+        else if(ToCharacters[where_is_Clara]->talent_point_get() > 0)//进行强化反击
         {
             std::cout << "克拉拉触发天赋 因为我们是家人"<<"(触发效果:对"<<FromCharacters[from]->name_get()<<"及其相邻目标强化反击施加\"反击标志\" ) "<< std::endl;
             //克拉拉的大招点数减一
-            ToCharacters[to]->talent_point_add(-1);
+            ToCharacters[where_is_Clara]->talent_point_add(-1);
             //暂时抑制克拉拉在反击过程中的反击能力，限制二次反击
             callCount--;
             double random_num = (double)rand() / RAND_MAX;
             double atk_result;
             double def_result;
             //同样的，计算伤害，分为暴击不暴击两种，防御力是From[from]，攻击力是To[to](也就是克拉拉)
-            if (random_num < ToCharacters[to]->crit_rate_get())
-                atk_result = (0.72 + ToCharacters[to]->talent_level_get() * 0.08 + 0.896 + 0.064 * ToCharacters[to]->ultra_level_get()) * ToCharacters[to]->atk_get()
-                * (1 + ToCharacters[to]->crit_DMG_get());
+            if (random_num < ToCharacters[where_is_Clara]->crit_rate_get())
+                atk_result = (0.72 + ToCharacters[where_is_Clara]->talent_level_get() * 0.08 + 0.896 + 0.064 * ToCharacters[where_is_Clara]->ultra_level_get()) * ToCharacters[where_is_Clara]->atk_get()
+                * (1 + ToCharacters[where_is_Clara]->crit_DMG_get());
             else
-                atk_result = (0.72 + ToCharacters[to]->talent_level_get() * 0.08) * ToCharacters[to]->atk_get();
-            def_result = (ToCharacters[to]->character_level_get() * 10 + 200)
-                / (FromCharacters[from]->def_get() + (ToCharacters[to]->character_level_get() * 10 + 200));
+                atk_result = (0.72 + ToCharacters[where_is_Clara]->talent_level_get() * 0.08) * ToCharacters[where_is_Clara]->atk_get();
+            def_result = (ToCharacters[where_is_Clara]->character_level_get() * 10 + 200)
+                / (FromCharacters[from]->def_get() + (ToCharacters[where_is_Clara]->character_level_get() * 10 + 200));
             double damage_Clara_talent = atk_result * def_result
-                * (1 + ToCharacters[to]->penetrate_get() - FromCharacters[from]->vulnerability_get(ToCharacters[to]->element_get()));
+                * (1 + ToCharacters[where_is_Clara]->penetrate_get() - FromCharacters[from]->vulnerability_get(ToCharacters[where_is_Clara]->element_get()));
             //对反击主目标造成伤害
-            DamageResult(to, from, ToCharacters, FromCharacters, damage_Clara_talent);
+            DamageResult(where_is_Clara, from, ToCharacters, FromCharacters, damage_Clara_talent);
             //对反击主目标添加(或者覆盖)反击标志
             status_clear(FromCharacters[from],std::string("反击标志"));
-            Status Clara_StrikeBack_Figure(from, to, 0, std::string("反击标志"), 1000, [](CombatCharacter& from, double value) {}, [](CombatCharacter& from, double value) {});
+            Status Clara_StrikeBack_Figure(from, where_is_Clara, 0, std::string("反击标志"), 1000, [](CombatCharacter& from, double value) {}, [](CombatCharacter& from, double value) {});
             FromCharacters[from]->status.push_back(Clara_StrikeBack_Figure);
             if (from > 0)//判断反击主目标左侧是否有对象，有，则对左侧这一对象扩散50%对主目标的伤害
             {
                 //对左侧这一对象扩散50%对主目标的伤害
-                DamageResult(to, from - 1, ToCharacters, FromCharacters, 0.5*damage_Clara_talent);
+                DamageResult(where_is_Clara, from - 1, ToCharacters, FromCharacters, 0.5*damage_Clara_talent);
                 //对左侧这一对象添加(或者覆盖)反击标志
                 status_clear(FromCharacters[from - 1],std::string("反击标志"));
-                Status Clara_StrikeBack_Figure(from - 1, to, 0, std::string("反击标志"), 1000, [](CombatCharacter& from, double value) {}, [](CombatCharacter& from, double value) {});
+                Status Clara_StrikeBack_Figure(from - 1, where_is_Clara, 0, std::string("反击标志"), 1000, [](CombatCharacter& from, double value) {}, [](CombatCharacter& from, double value) {});
                 FromCharacters[from - 1]->status.push_back(Clara_StrikeBack_Figure);
             }
             if (from < FromCharacters.size() - 1)//判断反击主目标右侧是否有对象，有，则对右侧这一对象扩散50%对主目标的伤害
              {
                 //对右侧这一对象扩散50%对主目标的伤害
-                DamageResult(to, from + 1, ToCharacters, FromCharacters, 0.5*damage_Clara_talent);
+                DamageResult(where_is_Clara, from + 1, ToCharacters, FromCharacters, 0.5*damage_Clara_talent);
                 //对右侧这一对象添加(或者覆盖)反击标志
                 status_clear(FromCharacters[from + 1],std::string("反击标志"));
-                Status Clara_StrikeBack_Figure(from + 1, to, 0, std::string("反击标志"), 1000, [](CombatCharacter& from, double value) {}, [](CombatCharacter& from, double value) {});
+                Status Clara_StrikeBack_Figure(from + 1, where_is_Clara, 0, std::string("反击标志"), 1000, [](CombatCharacter& from, double value) {}, [](CombatCharacter& from, double value) {});
                 FromCharacters[from + 1]->status.push_back(Clara_StrikeBack_Figure);
             }
-            IfKill(to,from,ToCharacters,FromCharacters);
-            if(from > 0)IfKill(to,from-1,ToCharacters,FromCharacters);
-            if(from < FromCharacters.size() - 1)IfKill(to,from+1,ToCharacters,FromCharacters);
-
-            //恢复克拉拉的反击能力
             callCount++;
             FromCharacters[from]->energy_change(5);
+            if(ToCharacters.size()>0&&ToCharacters[where_is_Clara]->entity_id_get()==1107){
+            if(from > 0)IfKill(where_is_Clara,from-1,ToCharacters,FromCharacters);
+            if(from < FromCharacters.size() - 1)IfKill(where_is_Clara,from+1,ToCharacters,FromCharacters);}
+            If_Kill_back(where_is_Clara, from, ToCharacters, FromCharacters);
+            //恢复克拉拉的反击能力
+
         }
     }
     else callCount = 1;
@@ -500,14 +509,19 @@ void DamageResult_with_Bailu_talent(int from, int to, std::vector<CombatCharacte
 //符玄的生命回复天赋
 void DamageResult_with_Fuxuan_talent(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters, double damage)
 {
+    int WhereIsFuxuan=-1;
+    for(int i=0;i<ToCharacters.size();i++){
+        if(ToCharacters[i]->entity_id_get()==1208){
+            WhereIsFuxuan=i;
+            break;}}
         //条件：被攻击对象为符玄，被攻击角色还没死，被攻击角色的生命值小于一半，符玄生命恢复天赋大于0
-    if (ToCharacters[to]->entity_id_get() == 1208 && ToCharacters[to]->talent_point_get() > 0
-        && ToCharacters[to]->hp_get() > 0 && ToCharacters[to]->hp_get() < (0.5 * ToCharacters[to]->hp_max_get()))
+    if (WhereIsFuxuan!=-1&&ToCharacters[WhereIsFuxuan]->entity_id_get() == 1208 && ToCharacters[WhereIsFuxuan]->talent_point_get() > 0
+        && ToCharacters[WhereIsFuxuan]->hp_get() > 0 && ToCharacters[WhereIsFuxuan]->hp_get() < (0.5 * ToCharacters[WhereIsFuxuan]->hp_max_get()))
     {
         //生命恢复，恢复量取决于符玄已经损失的血量与技能等级
-        ToCharacters[to]->hp_change((0.79 + 0.01 * ToCharacters[to]->talent_level_get()) * (ToCharacters[to]->hp_max_get() - ToCharacters[to]->hp_get()));
+        ToCharacters[WhereIsFuxuan]->hp_change((0.79 + 0.01 * ToCharacters[to]->talent_level_get()) * (ToCharacters[to]->hp_max_get() - ToCharacters[to]->hp_get()));
         //符玄生命恢复天赋点数减一
-        ToCharacters[to]->talent_point_add(-1);
+        ToCharacters[WhereIsFuxuan]->talent_point_add(-1);
         std::cout << "符玄触发天赋 乾清坤夷，否极泰来(触发效果：符玄生命回复)" << std::endl;
         return;
     }
@@ -578,7 +592,7 @@ void DamageResult(int from, int to, std::vector<CombatCharacter*>& FromCharacter
 
     else //没有穷观阵，没有伤害分担
     {
-        if (iffuxuan == true) {
+        if (WhereIsFuxuan != -1&&iffuxuan == true) {
             for (int j = 0; j < ToCharacters[to]->status.size(); j++) {
                 if (ToCharacters[to]->status[j].name_get() == "克拉拉大招伤害降低")
                 {
@@ -618,16 +632,15 @@ void DamageResult(int from, int to, std::vector<CombatCharacter*>& FromCharacter
     DamageResult_with_Clara_talent(from, to, FromCharacters, ToCharacters, damage);
     //检查符玄的天赋是否触发：是否进行生命恢复
     DamageResult_with_Fuxuan_talent(from, to, FromCharacters, ToCharacters, damage);
-    int WhereIsFuxuan2 = -1;
-    for (int i = 0; i < FromCharacters.size(); i++) {
-        if (FromCharacters[i]->entity_id_get() == 1208) {
-            iffuxuan = true;
-            WhereIsFuxuan2 = i;
+    int WhereIsFuxuan3 = -1;
+    for (int i = 0; i < ToCharacters.size(); i++) {
+        if (ToCharacters[i]->entity_id_get() == 1208) {
+            WhereIsFuxuan3 = i;
             break;
         }
     }
-    if(WhereIsFuxuan2 != -1){
-        IfKill(from,WhereIsFuxuan2,FromCharacters,ToCharacters);
+    if(WhereIsFuxuan3 != -1){
+        IfKill(from,WhereIsFuxuan3,FromCharacters,ToCharacters);
     }
 }
 
@@ -639,7 +652,7 @@ double Exact_def(int from, int to, std::vector<CombatCharacter*>& FromCharacters
 
 //判断受击对象是否被这次攻击击杀
 short IfKill(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters)
-{
+{   
     if (ToCharacters[to]->hp_get() <= 0)//击杀成功(白露复活天赋在此之前已经判断)
      {
         ToCharacters[to]->death_change();//标记一下死亡
@@ -691,7 +704,7 @@ short IfKill(int from, int to, std::vector<CombatCharacter*>& FromCharacters, st
             break;
         }
     KaiQiQiongguanDeFuXuan(ToCharacters);
-         
+
     for (auto i = ToCharacters.begin(); i != ToCharacters.end();)//使用迭代器删除队列元素
          {
             if (*i == ToCharacters[to]) {
@@ -713,6 +726,19 @@ short IfKill(int from, int to, std::vector<CombatCharacter*>& FromCharacters, st
         return 1;
      }
     return 0;
+}
+bool If_Kill_back(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters){
+    int where_is_oppo_Clara;
+    for(int i=0;i<ToCharacters.size();i++){
+        if(ToCharacters[i]->entity_id_get()==1107){
+            where_is_oppo_Clara=i;
+            break;}}
+    if(FromCharacters[from]->hp_get()<0){
+        short atk_back_kill=IfKill(where_is_oppo_Clara,from, ToCharacters, FromCharacters);
+        if(atk_back_kill==1){
+            return true;
+    }}
+    return false;
 }
 // 普攻的第一种情况
 short NormalFunction_1(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters){
@@ -748,6 +774,9 @@ short NormalFunction_1(int from, int to, std::vector<CombatCharacter*>& FromChar
     FromCharacters[from]->energy_change(20);
     //判断是否击杀了攻击对象并抹去击杀的对象，击杀有回能
     short killresult=IfKill(from, to, FromCharacters, ToCharacters);
+    bool IF_KILL_BACK=If_Kill_back(from, to, FromCharacters, ToCharacters);
+    if(IF_KILL_BACK)
+    return 1;
     if(killresult>1)//大于1，即击杀成功，而且是希儿击杀
         {
         //为希儿添加/覆盖1回合的damage_increase增幅状态，伤害增加
@@ -756,6 +785,7 @@ short NormalFunction_1(int from, int to, std::vector<CombatCharacter*>& FromChar
         FromCharacters[from]->status.push_back(Seele_increase_damage);
         return 3;
         }
+
         //非希儿击杀的其他情况下，正常表征一下普攻成功
         return 1;
     }
@@ -780,9 +810,11 @@ short NormalFunction_2(int from, int to, std::vector<CombatCharacter*>& FromChar
         //因为是符玄普攻，不需要判断瓦尔特、银狼天赋触发与三月七天赋恢复
     DamageResult(from, to, FromCharacters, ToCharacters, damage);
         //判断是否击杀了攻击对象并抹去击杀的对象，击杀有回能，显然不会是希儿击杀，不判断希儿
-    IfKill(from, to, FromCharacters, ToCharacters);
         //普通攻击回20
     FromCharacters[from]->energy_change(20);
+    IfKill(from, to, FromCharacters, ToCharacters);
+    If_Kill_back(from, to, FromCharacters, ToCharacters);
+    if(FromCharacters.size()>0)
     KaiQiQiongguanDeFuXuan(FromCharacters);
     //检查穷观阵效果是否失效
     return 1;
@@ -867,16 +899,18 @@ short UltraFunction_1001(int from, int to, std::vector<CombatCharacter*>& FromCh
             std::cout << ToCharacters[j]->name_get() << " ";
             }
         }
+        //能量回5
+        FromCharacters[from]->energy_change(5);
         std::cout << "陷入冰冻状态" << std::endl;
         for (int i = 0; i < ToCharacters.size(); i++)
         {
+            if(FromCharacters.size()>0&&FromCharacters[from]->entity_id_get()==1001){
             //判断是否击杀了攻击对象并抹去击杀的对象(这里是对方全体的每一个)，击杀有回能
             short killresult = IfKill(from, i, FromCharacters, ToCharacters); 
             if(killresult!=0)i--;
         }
-    }
-    //能量回5
-    FromCharacters[from]->energy_change(5);
+    }}
+    If_Kill_back(from, to, FromCharacters, ToCharacters);
     //返回0，表示终结技释放成功
     return 0;
     }
@@ -914,44 +948,74 @@ short SkillFunction_1004(int from, int to, std::vector<CombatCharacter*>& FromCh
 
     //结算伤害，同时判断各个受击型天赋的触发
     //触发瓦尔特天赋的附加伤害判断
-    DamageResult(from, to, FromCharacters, ToCharacters,damage+TalentFunction_1004(from, to, FromCharacters, ToCharacters));
-    //判断是否击杀了攻击对象并抹去击杀的对象，击杀有回能
-    IfKill(from, to, FromCharacters, ToCharacters);
-    if(ToCharacters.size()==0){
-        return 1;
-    }
-    for (int i = 0; i < 2; i++)
+    double DamageTime1=damage+TalentFunction_1004(from, to, FromCharacters, ToCharacters);
+
     //接下来是两次随机的攻击，对象换为随机，其他相同
-    {
         //生成一个0-1的随机数 判断减速生效概率
         double random_numforSlow2 = (double)rand() / RAND_MAX;
         //生成0-(size-1)的随机数，即弹射目标序号
-        int random_object = rand() % (ToCharacters.size());
+        int random_object1 = rand() % (ToCharacters.size());
         //伤害=攻击效果*防御效果*(1+元素穿透-元素抗性)而抗性取对应攻击元素属性的值，取时的定位依靠攻击者属性的元素序号获得
-        double damage2 = atk_result * def_result * (1 + FromCharacters[from]->penetrate_get() - ToCharacters[random_object]->vulnerability_get(FromCharacters[from]->element_get()));
+        double damage2 = atk_result * def_result * (1 + FromCharacters[from]->penetrate_get() - ToCharacters[random_object1]->vulnerability_get(FromCharacters[from]->element_get()));
 
         //判断减速生效是否
-        if (random_numforSlow2 < (0.64 + 0.01 * FromCharacters[from]->BPSkill_level_get()) * (1 + FromCharacters[from]->effect_hit_rate_get()) * (1 - ToCharacters[random_object]->effect_resist_get()))
+        if (random_numforSlow2 < (0.64 + 0.01 * FromCharacters[from]->BPSkill_level_get()) * (1 + FromCharacters[from]->effect_hit_rate_get()) * (1 - ToCharacters[random_object1]->effect_resist_get()))
         {
             //减速如果生效，添加/覆盖一个减速状态实现减速与恢复(带计时)效果
             status_clear(ToCharacters[to],std::string("瓦尔特战技减速"));
             Status WeltSkillEffect(to, from, 0.9, std::string("瓦尔特战技减速"), 2, [](CombatCharacter &, double){}, [](CombatCharacter &, double){});
-            ToCharacters[random_object]->status.push_back(WeltSkillEffect);
-            std::cout << "使" << ToCharacters[random_object]->name_get() << "速度降低，";
+            ToCharacters[random_object1]->status.push_back(WeltSkillEffect);
+            std::cout << "使" << ToCharacters[random_object1]->name_get() << "速度降低，";
         }
         //结算伤害，同时判断各个受击型天赋的触发
         //触发瓦尔特天赋的附加伤害判断4
-        DamageResult(from, random_object, FromCharacters, ToCharacters,
-        damage2+TalentFunction_1004(from, random_object, FromCharacters, ToCharacters));
+        double DamageTime2=damage2+TalentFunction_1004(from, random_object1, FromCharacters, ToCharacters);
+        
+        double random_numforSlow3 = (double)rand() / RAND_MAX;
+        //生成0-(size-1)的随机数，即弹射目标序号
+        int random_object2 = rand() % (ToCharacters.size());
+        //伤害=攻击效果*防御效果*(1+元素穿透-元素抗性)而抗性取对应攻击元素属性的值，取时的定位依靠攻击者属性的元素序号获得
+        double damage3 = atk_result * def_result * (1 + FromCharacters[from]->penetrate_get() - ToCharacters[random_object2]->vulnerability_get(FromCharacters[from]->element_get()));
 
-        //判断是否击杀了攻击对象并抹去击杀的对象，击杀有回能
-        IfKill(from, random_object, FromCharacters, ToCharacters);
-        if(ToCharacters.size()==0){
-            return 1;
+        //判断减速生效是否
+        if (random_numforSlow2 < (0.64 + 0.01 * FromCharacters[from]->BPSkill_level_get()) * (1 + FromCharacters[from]->effect_hit_rate_get()) * (1 - ToCharacters[random_object2]->effect_resist_get()))
+        {
+            //减速如果生效，添加/覆盖一个减速状态实现减速与恢复(带计时)效果
+            status_clear(ToCharacters[to],std::string("瓦尔特战技减速"));
+            Status WeltSkillEffect(to, from, 0.9, std::string("瓦尔特战技减速"), 2, [](CombatCharacter &, double){}, [](CombatCharacter &, double){});
+            ToCharacters[random_object2]->status.push_back(WeltSkillEffect);
+            std::cout << "使" << ToCharacters[random_object2]->name_get() << "速度降低，";
         }
-    }
+        //结算伤害，同时判断各个受击型天赋的触发
+        //触发瓦尔特天赋的附加伤害判断4
+        FromCharacters[from]->energy_change(30);
+        double DamageTime3=damage3+TalentFunction_1004(from, random_object2, FromCharacters, ToCharacters);
+        if(to==random_object1&&to==random_object2){
+            DamageResult(from, to,  FromCharacters, ToCharacters,DamageTime1+DamageTime2+DamageTime3);}
+        if(to==random_object1&&to!=random_object2){
+            DamageResult(from, to,  FromCharacters, ToCharacters,DamageTime1+DamageTime2);
+            DamageResult(from, random_object2,  FromCharacters, ToCharacters,DamageTime3);}
+        if(to!=random_object1&&to==random_object2){
+            DamageResult(from, to,  FromCharacters, ToCharacters,DamageTime1+DamageTime3);
+            DamageResult(from, random_object1,  FromCharacters, ToCharacters,DamageTime2);}
+        if(to!=random_object1&&random_object1==random_object2){
+            DamageResult(from, to,  FromCharacters, ToCharacters,DamageTime1);
+            DamageResult(from, random_object1,  FromCharacters, ToCharacters,DamageTime3+DamageTime2);}
+        if(to!=random_object1&&to!=random_object2&&random_object1!=random_object2){
+            DamageResult(from, to,  FromCharacters, ToCharacters,DamageTime1);
+            DamageResult(from, random_object1,  FromCharacters, ToCharacters,DamageTime2);
+            DamageResult(from, random_object2,  FromCharacters, ToCharacters,DamageTime3);}
+     for(int j = 0; j < ToCharacters.size(); j++){
+        if(FromCharacters.size()>0&&FromCharacters[from]->entity_id_get()==1004){
+        if( IfKill(from, j, FromCharacters, ToCharacters)!=0){
+            j--;
+           }
+        }}
+        If_Kill_back(from, to, FromCharacters, ToCharacters);
+        //判断是否击杀了攻击对象并抹去击杀的对象，击杀有回能
+
     //战技回复能量30点
-    FromCharacters[from]->energy_change(30);
+
     return 1;
 }
 short UltraFunction_1004(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters) {
@@ -1008,14 +1072,16 @@ short UltraFunction_1004(int from, int to, std::vector<CombatCharacter*>& FromCh
             + TalentFunction_1004(from, i, FromCharacters, ToCharacters));
         
     }
+    FromCharacters[from]->energy_change(5);
    //判断是否击杀了攻击对象并抹去击杀的对象，击杀有回能
      for(int j = 0; j < ToCharacters.size(); j++){
-           if( IfKill(from, j, FromCharacters, ToCharacters)!=0){
-                j--;
+        if(FromCharacters.size()>0&&FromCharacters[from]->entity_id_get()==1003){
+        if( IfKill(from, j, FromCharacters, ToCharacters)!=0){
+            j--;
            }
-        }
+        }}
+        If_Kill_back(from, to, FromCharacters, ToCharacters);
     //终结技回复能量5点
-    FromCharacters[from]->energy_change(5);
     //返回0表示终结技释放成功
     
     return 0;
@@ -1127,6 +1193,7 @@ short SkillFunction_1006(int from, int to, std::vector<CombatCharacter*>& FromCh
     TalentFunction_1006(from, to, FromCharacters, ToCharacters);
     FromCharacters[from]->energy_change(30);
     IfKill(from, to, FromCharacters, ToCharacters);
+    If_Kill_back(from, to, FromCharacters, ToCharacters);
     return 1;
 };
 void UltraFunction_1006_Defensedrop(CombatCharacter& character, double value) {
@@ -1182,9 +1249,10 @@ short UltraFunction_1006(int from, int to, std::vector<CombatCharacter*>& FromCh
         std::cout << "触发效果：使" << ToCharacters[to]->name_get() << "防御力降低" << std::endl;
 
     }
+    FromCharacters[from]->energy_change(5);
 
     IfKill(from, to, FromCharacters, ToCharacters);
-    FromCharacters[from]->energy_change(5);
+    If_Kill_back(from, to, FromCharacters, ToCharacters);
 
 
     return 0;
@@ -1251,7 +1319,8 @@ void Defense_recover(CombatCharacter& character, double value)
 void KaiQiQiongguanDeFuXuan(std::vector<CombatCharacter*>& FromCharacters)
 //这个函数用来判断穷观阵是否已经生效，要不要生效以及是否到时了要失效
 {
-
+    if(FromCharacters.size()<=0)
+    return;
     bool iffuxuan = false;
     //首先寻找队列中的符玄，得到位置
     int WhereIsFuxuan2 = -1;
@@ -1336,11 +1405,7 @@ short UltraFunction_1208(int from, int to, std::vector<CombatCharacter*>& FromCh
         double damage = hp_max_result * def_result * (1 + FromCharacters[from]->penetrate_get() - ToCharacters[i]->vulnerability_get(FromCharacters[from]->element_get()));
         DamageResult(from, i, FromCharacters, ToCharacters, damage);
     }
-    for(int i=0;i<ToCharacters.size();i++){
-        if(IfKill(from, i, FromCharacters, ToCharacters)!=0){
-            i--;
-        }
-    }
+
     //增加一点天赋触发次数
     FromCharacters[from]->talent_point_add(1);
     //触发次数最大为二，如果超过了就减掉
@@ -1348,9 +1413,14 @@ short UltraFunction_1208(int from, int to, std::vector<CombatCharacter*>& FromCh
         FromCharacters[from]->talent_point_add(2 - FromCharacters[from]->talent_point_get());
     };
     FromCharacters[from]->energy_change(5);
-
-
-
+    for(int i=0;i<ToCharacters.size();i++){
+        if(FromCharacters.size()>0&&FromCharacters[from]->entity_id_get()==1208){
+        if(IfKill(from, i, FromCharacters, ToCharacters)!=0){
+            i--;
+        }
+    }}
+    If_Kill_back(from, to, FromCharacters, ToCharacters);
+    
     return 0;
 }
 
@@ -1506,14 +1576,16 @@ short SkillFunction_1107(int from, int to, std::vector<CombatCharacter*>& FromCh
             DamageResult(from, i, FromCharacters, ToCharacters, damage);
         }
     }   
+
+       std::cout <<"共计"<<num_exact_attckback<<"个对象造成额外伤害" << std::endl;
+    FromCharacters[from]->energy_change(30);
     for (int i = 0; i < ToCharacters.size(); i++) {
+        if(FromCharacters.size()>0&&FromCharacters[from]->entity_id_get()==1107) {
         if(IfKill(from, i, FromCharacters, ToCharacters)!=0){
             i--;
         }
-    }
-       std::cout <<"共计"<<num_exact_attckback<<"个对象造成额外伤害" << std::endl;
-    FromCharacters[from]->energy_change(30);
-
+    }}
+    If_Kill_back(from, to, FromCharacters, ToCharacters);
     return 1;
 }
 short UltraFunction_1107(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters) {
@@ -1554,7 +1626,7 @@ short SkillFunction_1003(int from, int to, std::vector<CombatCharacter*>& FromCh
         }
     }
     std::cout << "行动执行：姬子释放战技 " << "熔核爆裂" << std::endl;
-    std::cout << "触发效果：对" << ToCharacters[to] << "及其相邻对象造成伤害" << std::endl;
+    std::cout << "触发效果：对" << ToCharacters[to]->name_get()<< "及其相邻对象造成伤害" << std::endl;
     {
         //扩散伤害，需要计算与目标相邻的对象的防御力，同时要防止虚空索敌(即to==0时打到-1的对象)，因此分类讨论
         if (to < 0 || to >= ToCharacters.size())
@@ -1579,13 +1651,13 @@ short SkillFunction_1003(int from, int to, std::vector<CombatCharacter*>& FromCh
             DamageResult(from, to + 1, FromCharacters, ToCharacters, 0.4 * atk_result * Exact_def(from, to + 1, FromCharacters, ToCharacters));
         }
     }
-    
-    IfKill(from, to, FromCharacters, ToCharacters);
-    if(to > 0)IfKill(from, to - 1, FromCharacters, ToCharacters);
-    if(to < ToCharacters.size()-1)IfKill(from, to + 1, FromCharacters, ToCharacters);
     FromCharacters[from]->energy_change(30);
-
-
+    IfKill(from, to, FromCharacters, ToCharacters);
+    if(FromCharacters.size()>0&&FromCharacters[from]->entity_id_get()==1003)
+    if(to > 0)IfKill(from, to - 1, FromCharacters, ToCharacters);
+    if(FromCharacters.size()>0&&FromCharacters[from]->entity_id_get()==1003)
+    if(to < ToCharacters.size()-1)IfKill(from, to + 1, FromCharacters, ToCharacters);
+    If_Kill_back(from, to, FromCharacters, ToCharacters);
     return 1;
 }
 short UltraFunction_1003(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters) {
@@ -1611,16 +1683,14 @@ short UltraFunction_1003(int from, int to, std::vector<CombatCharacter*>& FromCh
             FromCharacters[from]->energy_change(5);
         }
     }
+    FromCharacters[from]->energy_change(5);
     for (int i = 0; i < ToCharacters.size(); i++) {
+        if(FromCharacters.size()>0&&FromCharacters[from]->entity_id_get()==1003){
         if(IfKill(from, i, FromCharacters, ToCharacters)!=0){
             i--;
         }
-    }
-
-    //放完大招清空
-    FromCharacters[from]->energy_change(5);
-
-
+    }}
+    If_Kill_back(from, to, FromCharacters, ToCharacters);
     return 0;
 
 }
@@ -1651,6 +1721,8 @@ short SkillFunction_1102(int from, int to, std::vector<CombatCharacter*>& FromCh
     FromCharacters[from]->energy_change(30);
     //之前写了Ifkill，如果是希儿击杀目标，则killresult>1
     short killresult = IfKill(from, to, FromCharacters, ToCharacters);
+    if(If_Kill_back(from, to, FromCharacters, ToCharacters))
+    return 1;
     if (killresult > 1)
     {
         //希儿击杀目标进入增幅状态，伤害增加，持续1回合
@@ -1658,7 +1730,7 @@ short SkillFunction_1102(int from, int to, std::vector<CombatCharacter*>& FromCh
         Status Seele_increase_damage(to, from, 0.36 + 0.04 * FromCharacters[from]->talent_level_get(), std::string("希儿增幅状态"), 2, [](CombatCharacter& character, double value) {}, [](CombatCharacter& character, double value) {});
         FromCharacters[from]->status.push_back(Seele_increase_damage);
         return 3;
-    }
+    } 
     return 1;
 }
 short UltraFunction_1102(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters) {
@@ -1694,8 +1766,9 @@ short UltraFunction_1102(int from, int to, std::vector<CombatCharacter*>& FromCh
     else
         DamageResult(from, to, FromCharacters, ToCharacters, damage);
     FromCharacters[from]->energy_change(5);
-
     short killresult = IfKill(from, to, FromCharacters, ToCharacters);
+    if(If_Kill_back(from, to, FromCharacters, ToCharacters))
+    return 0;
     if (killresult > 1) { return 2; }
     return 0;
 }

@@ -62,14 +62,14 @@ std::vector<FriendCharacter> friends_init(int m){
             }
         }
         if(cnt!=7){
-            std::cerr << "输入的数据无效，请重新输入。ERROR:0x01" << std::endl;
+            std::cerr << "输入的数据无效，请重新输入。ERROR:0x00" << std::endl;
             std::cin.sync();
             i--;
             continue;
         }
         // 检查输入数据的合法性(包括ID，角色等级，普攻等级，战技、终结、天赋等级，星魂等级）
         if (!isFriendInDictionary(id, characters)|| !isValidCharacterValue(character_level) || !isValidBasicValue(basic_level) || !isValidLevel(BPSkill_level) || !isValidLevel(ultra_level) || !isValidLevel(talent_level) || !isValidRank(rank)) {
-            std::cerr << "对象构造失败，请检查输入信息是否合法（超出范围），并重新输入。ERROR:0x02" << std::endl;
+            std::cerr << "对象构造失败，请检查输入信息是否合法（超出范围），并重新输入。ERROR:0x01" << std::endl;
             i--;                      // 对象构造失败，重新处理当前对象的输入
         } else {
             // 初始化我方角色 Friendcharacter
@@ -134,14 +134,14 @@ std::vector<EnemyCharacter> enemies_init(int n){
             }
         }
          if(cnt!=7){
-            std::cerr << "输入的数据无效，请重新输入。ERROR:0x01" << std::endl;
+            std::cerr << "输入的数据无效，请重新输入。ERROR:0x00" << std::endl;
             std::cin.sync();
             i--;
             continue;
         }
         // 检查输入数据的合法性(包括ID，角色等级，普攻等级，战技、终结、天赋等级，星魂等级）
         if (!isEnemyInDictionary(id, characters)|| !isValidCharacterValue(character_level) || !isValidBasicValue(basic_level) || !isValidLevel(BPSkill_level) || !isValidLevel(ultra_level) || !isValidLevel(talent_level) || !isValidRank(rank)) {
-            std::cout << "对象构造失败，请检查输入信息是否合法，并重新输入。ERROR:0x02" << std::endl;
+            std::cout << "对象构造失败，请检查输入信息是否合法，并重新输入。ERROR:0x01" << std::endl;
             i--;                      // 对象构造失败，重新处理当前对象的输入
         } else {
             // 初始化对方角色 Enemycharacter
@@ -343,14 +343,14 @@ void check_skill(int from, int turn, int m, int n, std::vector<FriendCharacter*>
     if (from >= 0 && from < m) team = 0;
     else if (from >= m && from < m + n) team = 1;
     else {
-        std::cerr << "输入的指令中角色信息无效，请您重新输入！";
+        std::cerr << "输入的指令中角色信息无效，请您重新输入！ ERROR:0x02";
         return;
     }
     //计算from在各自阵营的位置
     if (from >= 0 && from < m) team = 0;
     else if (from >= m && from < m + n) team = 1;
     else {
-        std::cerr << "输入的指令中角色信息无效，请您重新输入！";
+        std::cerr << "输入的指令中角色信息无效，请您重新输入！ ERROR:0x02";
         return;
     }
     // 判断是在自然回合还是额外回合
@@ -369,23 +369,23 @@ void check_skill(int from, int turn, int m, int n, std::vector<FriendCharacter*>
                     if (friend_positionArray[from_position] -> skillpoint != 0){
                         std::cout << "战技可以释放；";
                     } else {
-                        std::cout << "战技点不足，无法释放战技；";
+                        std::cout << "战技点不足，无法释放战技；ERROR:0x03";
                     }
                 } else {
                     if (enemy_positionArray[from_position] -> skillpoint != 0){
                         std::cout << "战技可以释放；";
                     } else {
-                        std::cout << "战技点不足，无法释放战技；";
+                        std::cout << "战技点不足，无法释放战技；ERROR:0x03";
                     }
                 }
             } else {
-                std::cout << "不是当前角色的自然回合，无法释放普通攻击；" << "无法释放战技；";
+                std::cout << "不是当前角色的自然回合，无法释放普通攻击；" << "无法释放战技；ERROR 0x04";
             }
         } else {
             if (tag == 1){
-                std::cout << "角色已执行自然回合行动，不可再次释放普攻或战技；";
+                std::cout << "角色已执行自然回合行动，不可再次释放普攻或战技；ERROR:0x05";
             } else {
-                std::cout << "不是当前角色的自然回合，无法释放普通攻击；" << "无法释放战技；";
+                std::cout << "不是当前角色的自然回合，无法释放普通攻击；" << "无法释放战技；ERROR 0x04";
             }
         }
     } else {
@@ -395,17 +395,17 @@ void check_skill(int from, int turn, int m, int n, std::vector<FriendCharacter*>
                 if (friend_positionArray[from_position] -> skillpoint != 0){
                     std::cout << "战技可以释放；";
                 } else {
-                    std::cout << "战技点不足，无法释放战技；";
+                    std::cout << "战技点不足，无法释放战技；ERROR:0x03";
                 }
             } else {
                 if (enemy_positionArray[from_position] -> skillpoint != 0){
                     std::cout << "战技可以释放；";
                 } else {
-                    std::cout << "战技点不足，无法释放战技；";
+                    std::cout << "战技点不足，无法释放战技；ERROR:0x03";
                 }
             }
         } else {
-            std::cout << "不是当前角色的额外回合，无法释放普通攻击；" << "无法释放战技；";
+            std::cout << "不是当前角色的额外回合，无法释放普通攻击；" << "无法释放战技；ERROR:0x06";
         }
     }
     // 检查终极技是否可以释放，并反馈输出信息
@@ -414,17 +414,17 @@ void check_skill(int from, int turn, int m, int n, std::vector<FriendCharacter*>
             if (friend_positionArray[from_position] -> energy_restore_get() == friend_positionArray[from_position] -> energy_max_get()){
                 std::cout << "终结技可以释放。" << std::endl;
             } else {
-                std::cout << "能量不足，终结技无法释放。" << std::endl;
+                std::cout << "能量不足，终结技无法释放。ERROR:0x07" << std::endl;
             }
         } else {
             if (enemy_positionArray[from_position] -> energy_restore_get() == enemy_positionArray[from_position] -> energy_max_get()){
                 std::cout << "终结技可以释放。" << std::endl;
             } else {
-                std::cout << "能量不足，终结技无法释放。" << std::endl;
+                std::cout << "能量不足，终结技无法释放。ERROR:0x07" << std::endl;
             }
         }
     } else {
-        std::cout << "额外回合，终结技不可释放。" << std::endl;
+        std::cout << "额外回合，终结技不可释放。ERROR: 0x08" << std::endl;
     }
     std::cout << std::endl;
 }
@@ -532,14 +532,14 @@ void Query(std::string input, int turn, int m, int n, std::vector<FriendCharacte
     try {
         from = std::stoi(id);
     } catch (const std::invalid_argument& e) {
-        std::cerr << "信息检索失败！ 输入的指令数据不合法，请您重新输入！" << std::endl;
+        std::cerr << "信息检索失败！ 输入的指令数据不合法，请您重新输入！ERROR:0x09" << std::endl;
         return;
     }
     // 判断我方阵营还是敌方阵营
     if (from >= 0 && from < m) team = 0;
     else if (from >= m && from < m + n) team = 1;
     else {
-        std::cerr << "信息检索失败！ 输入的指令中角色信息无效，请您重新输入！";
+        std::cerr << "信息检索失败！ 输入的指令中角色信息无效，请您重新输入！ERROR:0x09";
         return;
     }
     
@@ -560,7 +560,7 @@ void Query(std::string input, int turn, int m, int n, std::vector<FriendCharacte
         }
     }
     if (from_position == -1) {
-        std::cerr << "信息检索失败，请您重新输入！" << std::endl;
+        std::cerr << "信息检索失败，请您重新输入！ERROR:0x09" << std::endl;
         return;
     }
     CombatCharacter* characterPtr = team == 0 ? friendCombatArray[from_position] : enemyCombatArray[from_position];
@@ -576,7 +576,7 @@ void Query(std::string input, int turn, int m, int n, std::vector<FriendCharacte
         std::cout << "信息检索成功： ";
         check_skill(from, turn, m, n, friend_positionArray, enemy_positionArray, waitingQueue, flag);
     } else {
-        std::cerr << "信息检索失败！ 输入的查询指令不合法，请您重新输入！" << std::endl;
+        std::cerr << "信息检索失败！ 输入的查询指令不合法，请您重新输入！ERROR:0x09" << std::endl;
     }
 }
 
@@ -593,14 +593,14 @@ bool Skip(std::vector<std::pair<CombatCharacter*, bool>>& waitingQueue, bool fla
             waitingQueue = new_waitingQueue(waitingQueue);
             return true;
         } else {
-            std::cerr << "角色" << "在自然回合中尚未行动，不可跳过" << std::endl;
+            std::cerr << "角色" << "在自然回合中尚未行动，不可跳过。ERROR:0x0a" << std::endl;
             return false;
         }
     } else if (!waitingQueue.empty() && waitingQueue[0].second == 1) {
-        std::cerr << "角色" << "在额外回合中尚未行动，不可跳过" << std::endl;
+        std::cerr << "角色" << "在额外回合中尚未行动，不可跳过。ERROR:0x0b" << std::endl;
         return false;
     } else {
-        std::cerr << "错误！行动队列为空" << std::endl;
+        std::cerr << "错误！行动队列为空。ERROR:0x0c" << std::endl;
         return false;
     }
 }
@@ -641,7 +641,7 @@ bool Execute(std::string input, int m, int n, bool team, int turn, std::vector<F
     }
     if(cnt!=4){
         std::cin.sync();
-        std::cerr << "输入的指令数据不合法(参数过多)，请您重新输入！" << std::endl;
+        std::cerr << "输入的指令数据不合法(参数过多)，请您重新输入！ ERROR:0x0d" << std::endl;
         return 0;
     }
     // 将输入的数字格式转化为int，如果非法则报错
@@ -650,7 +650,7 @@ bool Execute(std::string input, int m, int n, bool team, int turn, std::vector<F
         from = std::stoi(characterIndex);
         to = std::stoi(targetIndex);
     } catch (const std::invalid_argument& e) {
-        std::cerr << "输入的指令数据不合法，请您重新输入！" << std::endl;
+        std::cerr << "输入的指令数据不合法，请您重新输入！ ERROR:0x0d" << std::endl;
         return 0;
     }
     
@@ -672,13 +672,13 @@ bool Execute(std::string input, int m, int n, bool team, int turn, std::vector<F
     if (from >= 0 && from < m) from_team = 0;
     else if (from >= m && from < m + n) from_team = 1;
     else {
-        std::cerr << "输入的指令中角色信息无效，请您重新输入！";
+        std::cerr << "输入的指令中角色信息无效，请您重新输入！ ERROR:0x0e";
         return 0;
     }
     if (to >= 0 && to < m) to_team = 0;
     else if (to >= m && to < m + n) to_team = 1;
     else {
-        std::cerr << "输入的指令中角色信息无效，请您重新输入！";
+        std::cerr << "输入的指令中角色信息无效，请您重新输入！ ERROR:0x0e";
         return 0;
     }
         
@@ -716,21 +716,21 @@ bool Execute(std::string input, int m, int n, bool team, int turn, std::vector<F
                     state = *friend_positionArray[from_position]->check_ultra(from_team, to_team);
                     switch (state){
                         case -1:
-                            std::cerr << "输入的指令数据不合法，请您重新输入！" << std::endl;
+                            std::cerr << "输入的指令数据不合法，请您重新输入！ ERROR:0x0d" << std::endl;
                             return 0;
                         case 0:
                             std::cout << "执行代号" << friend_positionArray[from_position]->id_get() << "角色终结技成功\n";
                             result = *friend_positionArray[from_position]->ultra(from_position, to_position, friendCombatArray, enemyCombatArray);
                             break;
                         case -2:
-                            std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色终结技应作用于同一阵营角色，请您重新输入！\n";
+                            std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色终结技应作用于同一阵营角色，请您重新输入！ERROR:0x0f\n";
                             return 0;
                         case -3:
-                            std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色终结技应作用于对手阵营角色，请您重新输入！\n";
+                            std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色终结技应作用于对手阵营角色，请您重新输入！ERROR:0x10\n";
                             return 0;
                     }
                 } else {
-                    std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色能量不足，不能使用终结技 ERROR:0x08" << std::endl;
+                    std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色能量不足，不能使用终结技 ERROR:0x07" << std::endl;
                     return 0;
                 }
             } else {
@@ -738,21 +738,21 @@ bool Execute(std::string input, int m, int n, bool team, int turn, std::vector<F
                     state = *enemy_positionArray[from_position]->check_ultra(from_team, to_team);
                     switch (state){
                         case -1:
-                            std::cerr << "输入的指令数据不合法，请您重新输入！" << std::endl;
+                            std::cerr << "输入的指令数据不合法，请您重新输入！ ERROR:0x0d" << std::endl;
                             return 0;
                         case 0:
                             std::cout << "执行代号" << enemy_positionArray[from_position]->id_get() << "角色终结技成功\n";
                             result = *enemy_positionArray[from_position]->ultra(from_position, to_position, enemyCombatArray, friendCombatArray);
                             break;
                         case -2:
-                            std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色终结技应作用于同一阵营角色，请您重新输入！\n";
+                            std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色终结技应作用于同一阵营角色，请您重新输入！ERROR:0x0f\n";
                             return 0;
                         case -3:
-                            std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色终结技应作用于对手阵营角色，请您重新输入！\n";
+                            std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色终结技应作用于对手阵营角色，请您重新输入！ERROR:0x10\n";
                             return 0;
                     }
                 } else {
-                    std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色能量不足，不能使用终结技 ERROR:0x08" << std::endl;
+                    std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色能量不足，不能使用终结技 ERROR:0x07" << std::endl;
                     return 0;
                 }
             }
@@ -764,7 +764,7 @@ bool Execute(std::string input, int m, int n, bool team, int turn, std::vector<F
                             state = *friend_positionArray[from_position]->check_skill(from_team, to_team);
                             switch (state){
                                 case -1:
-                                    std::cerr << "输入的指令数据不合法，请您重新输入！" << std::endl;
+                                    std::cerr << "输入的指令数据不合法，请您重新输入！ ERROR:0x0d" << std::endl;
                                     return 0;
                                 case 0:
                                     std::cout << "执行代号" << friend_positionArray[from_position]->id_get() << "角色战技成功\n";
@@ -773,14 +773,14 @@ bool Execute(std::string input, int m, int n, bool team, int turn, std::vector<F
                                     passTime(waitingQueue);
                                     break;
                                 case -2:
-                                    std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色战技应作用于同一阵营角色，请您重新输入！\n";
+                                    std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色战技应作用于同一阵营角色，请您重新输入！ERROR:0x11\n";
                                     return 0;
                                 case -3:
-                                    std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色战技应作用于对手阵营角色，请您重新输入！\n";
+                                    std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色战技应作用于对手阵营角色，请您重新输入！ERROR:0x12\n";
                                     return 0;
                             }
                         } else {
-                            std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色战技点不足，不能使用战技 ERROR:0x06" << std::endl;
+                            std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色战技点不足，不能使用战技 ERROR:0x03" << std::endl;
                             return 0;
                         }
                     } else {
@@ -788,7 +788,7 @@ bool Execute(std::string input, int m, int n, bool team, int turn, std::vector<F
                             state = *enemy_positionArray[from_position]->check_skill(from_team, to_team);
                             switch (state){
                                 case -1:
-                                    std::cerr << "输入的指令数据不合法，请您重新输入！" << std::endl;
+                                    std::cerr << "输入的指令数据不合法，请您重新输入！ ERROR:0x0d" << std::endl;
                                     return 0;
                                 case 0:
                                     std::cout << "执行代号" << enemy_positionArray[from_position]->id_get() << "角色战技成功\n";
@@ -797,41 +797,41 @@ bool Execute(std::string input, int m, int n, bool team, int turn, std::vector<F
                                     passTime(waitingQueue);
                                     break;
                                 case -2:
-                                    std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色战技应作用于同一阵营角色，请您重新输入！\n";
+                                    std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色战技应作用于同一阵营角色，请您重新输入！ERROR:0x11\n";
                                     return 0;
                                 case -3:
-                                    std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色战技应作用于对手阵营角色，请您重新输入！\n";
+                                    std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色战技应作用于对手阵营角色，请您重新输入！ERROR:0x12\n";
                                     return 0;
                             }
                         } else {
-                            std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色战技点不足，不能使用战技 ERROR:0x06" << std::endl;
+                            std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色战技点不足，不能使用战技 ERROR:0x03" << std::endl;
                             return 0;
                         }
                     }
                 } else {
                     if (from_team == 0){
-                        std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色不属于当前角色回合，不能使用普攻或战技 ERROR:0x07" << std::endl;
+                        std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色不属于当前角色回合，不能使用普攻或战技 ERROR:0x04" << std::endl;
                         return 0;
                     } else {
-                        std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色不属于当前角色回合，不能使用普攻或战技 ERROR:0x07" << std::endl;
+                        std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色不属于当前角色回合，不能使用普攻或战技 ERROR:0x04" << std::endl;
                         return 0;
                     }
                 }
             } else {
                 if (from == turn) {
                     if (from_team == 0){
-                        std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "已经完成自然回合行动，同一回合不能重复行动，请您输入 Skip 进入下一回合" << std::endl;
+                        std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "已经完成自然回合行动，同一回合不能重复行动，请您输入 Skip 进入下一回合。ERROR:0x05" << std::endl;
                         return 0;
                     } else {
-                        std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "已经完成自然回合行动，同一回合不能重复行动，请您输入 Skip 进入下一回合" << std::endl;
+                        std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "已经完成自然回合行动，同一回合不能重复行动，请您输入 Skip 进入下一回合。ERROR:0x05" << std::endl;
                         return 0;
                     }
                 } else {
                     if (from_team == 0){
-                        std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色不属于当前角色回合，不能使用普攻或战技 ERROR:0x07" << std::endl;
+                        std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色不属于当前角色回合，不能使用普攻或战技 ERROR:0x04" << std::endl;
                         return 0;
                     } else {
-                        std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色不属于当前角色回合，不能使用普攻或战技 ERROR:0x07" << std::endl;
+                        std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色不属于当前角色回合，不能使用普攻或战技 ERROR:0x04" << std::endl;
                         return 0;
                     }
                 }
@@ -843,71 +843,71 @@ bool Execute(std::string input, int m, int n, bool team, int turn, std::vector<F
                         state = *friend_positionArray[from_position]->check_normal(from_team, to_team);
                         switch (state){
                             case -1:
-                                std::cerr << "输入的指令数据不合法，请您重新输入！" << std::endl;
+                                std::cerr << "输入的指令数据不合法，请您重新输入！ ERROR:0x0d" << std::endl;
                                 return 0;
                             case 0:
                                 std::cout << "执行代号" << friend_positionArray[from_position]->id_get() << "角色普攻成功\n";
                                 result = *friend_positionArray[from_position]->normal(from_position, to_position, friendCombatArray, enemyCombatArray);
-                                friend_positionArray[from_position]->skillpoint++;
+                                if(friend_positionArray[from_position]->skillpoint<5) friend_positionArray[from_position]->skillpoint++;
                                 passTime(waitingQueue);
                                 break;
                             case -2:
-                                std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色普攻应作用于同一阵营角色，请您重新输入！\n";
+                                std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色普攻应作用于同一阵营角色，请您重新输入！ERROR:0x13\n";
                                 return 0;
                             case -3:
-                                std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色普攻应作用于对手阵营角色，请您重新输入！\n";
+                                std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色普攻应作用于对手阵营角色，请您重新输入！ERROR:0x14\n";
                                 return 0;
                         }
                     } else {
                         state = *enemy_positionArray[from_position]->check_normal(from_team, to_team);
                         switch (state){
                             case -1:
-                                std::cerr << "输入的指令数据不合法，请您重新输入！" << std::endl;
+                                std::cerr << "输入的指令数据不合法，请您重新输入！ ERROR:0x0d" << std::endl;
                                 return 0;
                             case 0:
                                 std::cout << "执行代号" << enemy_positionArray[from_position]->id_get() << "角色普攻成功\n";
                                 result = *enemy_positionArray[from_position]->normal(from_position, to_position, enemyCombatArray, friendCombatArray);
-                                enemy_positionArray[from_position]->skillpoint++;
+                                if(enemy_positionArray[from_position]->skillpoint<5)enemy_positionArray[from_position]->skillpoint++;
                                 passTime(waitingQueue);
                                 break;
                             case -2:
-                                std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色普攻应作用于同一阵营角色，请您重新输入！\n";
+                                std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色普攻应作用于同一阵营角色，请您重新输入！ERROR:0x13\n";
                                 return 0;
                             case -3:
-                                std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色普攻应作用于对手阵营角色，请您重新输入！\n";
+                                std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色普攻应作用于对手阵营角色，请您重新输入！ERROR:0x14\n";
                                 return 0;
                         }
                     }
                 } else {
                     if (from_team == 0){
-                        std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色不属于当前角色回合，不能使用普攻或战技 ERROR:0x07" << std::endl;
+                        std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色不属于当前角色回合，不能使用普攻或战技 ERROR:0x04" << std::endl;
                         return 0;
                     } else {
-                        std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色不属于当前角色回合，不能使用普攻或战技 ERROR:0x07" << std::endl;
+                        std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色不属于当前角色回合，不能使用普攻或战技 ERROR:0x04" << std::endl;
                         return 0;
                     }
                 }
             } else {
                 if (from == turn) {
                     if (from_team == 0){
-                        std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "已经完成自然回合行动，同一回合不能重复行动，请您输入 Skip 进入下一回合" << std::endl;
+                        std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "已经完成自然回合行动，同一回合不能重复行动，请您输入 Skip 进入下一回合。ERROR:0x05 " << std::endl;
                         return 0;
                     } else {
-                        std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "已经完成自然回合行动，同一回合不能重复行动，请您输入 Skip 进入下一回合" << std::endl;
+                        std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "已经完成自然回合行动，同一回合不能重复行动，请您输入 Skip 进入下一回合。ERROR:0x05 " << std::endl;
                         return 0;
                     }
                 } else {
                     if (from_team == 0){
-                        std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色不属于当前角色回合，不能使用普攻或战技 ERROR:0x07" << std::endl;
+                        std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色不属于当前角色回合，不能使用普攻或战技 ERROR:0x04" << std::endl;
                         return 0;
                     } else {
-                        std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色不属于当前角色回合，不能使用普攻或战技 ERROR:0x07" << std::endl;
+                        std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色不属于当前角色回合，不能使用普攻或战技 ERROR:0x04" << std::endl;
                         return 0;
                     }
                 }
             }
         } else {
-            std::cerr << "输入的指令行动不合法，请您重新输入！ ERROR:0x09";
+            std::cerr << "输入的指令行动不合法，请您重新输入！  ERROR:0x0d";
             return 0;
         }
     } else {
@@ -918,7 +918,7 @@ bool Execute(std::string input, int m, int n, bool team, int turn, std::vector<F
                         state = *friend_positionArray[from_position]->check_skill(from_team, to_team);
                         switch (state){
                             case -1:
-                                std::cerr << "输入的指令数据不合法，请您重新输入！" << std::endl;
+                                std::cerr << "输入的指令数据不合法，请您重新输入！ ERROR:0x0d" << std::endl;
                                 return 0;
                             case 0:
                                 std::cout << "执行代号" << friend_positionArray[from_position]->id_get() << "角色战技成功\n";
@@ -926,14 +926,14 @@ bool Execute(std::string input, int m, int n, bool team, int turn, std::vector<F
                                 friend_positionArray[from_position]->skillpoint--;
                                 break;
                             case -2:
-                                std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色战技应作用于同一阵营角色，请您重新输入！\n";
+                                std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色战技应作用于同一阵营角色，请您重新输入！ERROR:0x11\n";
                                 return 0;
                             case -3:
-                                std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色战技应作用于对手阵营角色，请您重新输入！\n";
+                                std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色战技应作用于对手阵营角色，请您重新输入！ERROR:0x12\n";
                                 return 0;
                         }
                     } else {
-                        std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色战技点不足，不能使用战技 ERROR:0x06" << std::endl;
+                        std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色战技点不足，不能使用战技 ERROR:0x03" << std::endl;
                         return 0;
                     }
                 } else {
@@ -941,7 +941,7 @@ bool Execute(std::string input, int m, int n, bool team, int turn, std::vector<F
                         state = *enemy_positionArray[from_position]->check_skill(from_team, to_team);
                         switch (state){
                             case -1:
-                                std::cerr << "输入的指令数据不合法，请您重新输入！" << std::endl;
+                                std::cerr << "输入的指令数据不合法，请您重新输入！ ERROR:0x0d" << std::endl;
                                 return 0;
                             case 0:
                                 std::cout << "执行代号" << enemy_positionArray[from_position]->id_get() << "角色战技成功\n";
@@ -949,23 +949,23 @@ bool Execute(std::string input, int m, int n, bool team, int turn, std::vector<F
                                 enemy_positionArray[from_position]->skillpoint--;
                                 break;
                             case -2:
-                                std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色战技应作用于同一阵营角色，请您重新输入！\n";
+                                std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色战技应作用于同一阵营角色，请您重新输入！ERROR:0x11\n";
                                 return 0;
                             case -3:
-                                std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色战技应作用于对手阵营角色，请您重新输入！\n";
+                                std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色战技应作用于对手阵营角色，请您重新输入！ERROR:0x12\n";
                                 return 0;
                         }
                     } else {
-                        std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色战技点不足，不能使用战技 ERROR:0x06" << std::endl;
+                        std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色战技点不足，不能使用战技 ERROR:0x03" << std::endl;
                         return 0;
                     }
                 }
             } else {
                 if (from_team == 0){
-                    std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色不属于当前额外回合，无法行动" << std::endl;
+                    std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色不属于当前额外回合，无法行动。ERROR:0x06" << std::endl;
                     return 0;
                 } else {
-                    std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色不属于当前额外回合，无法行动" << std::endl;
+                    std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色不属于当前额外回合，无法行动。ERROR:0x06" << std::endl;
                     return 0;
                 }
             }
@@ -975,53 +975,53 @@ bool Execute(std::string input, int m, int n, bool team, int turn, std::vector<F
                     state = *friend_positionArray[from_position]->check_normal(from_team, to_team);
                     switch (state){
                         case -1:
-                            std::cerr << "输入的指令数据不合法，请您重新输入！" << std::endl;
+                            std::cerr << "输入的指令数据不合法，请您重新输入！ ERROR:0x0d" << std::endl;
                             return 0;
                         case 0:
                             std::cout << "执行代号" << friend_positionArray[from_position]->id_get() << "角色普攻成功\n";
                             result = *friend_positionArray[from_position]->normal(from_position, to_position, friendCombatArray, enemyCombatArray);
-                            friend_positionArray[from_position]->skillpoint++;
+                            if(friend_positionArray[from_position]->skillpoint<5) friend_positionArray[from_position]->skillpoint++;
                             break;
                         case -2:
-                            std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色普攻应作用于同一阵营角色，请您重新输入！\n";
+                            std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色普攻应作用于同一阵营角色，请您重新输入！ERROR:0x13\n";
                             return 0;
                         case -3:
-                            std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色普攻应作用于对手阵营角色，请您重新输入！\n";
+                            std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色普攻应作用于对手阵营角色，请您重新输入！ERROR:0x14\n";
                             return 0;
                     }
                 } else {
                     state = *enemy_positionArray[from_position]->check_normal(from_team, to_team);
                     switch (state){
                         case -1:
-                            std::cerr << "输入的指令数据不合法，请您重新输入！" << std::endl;
+                            std::cerr << "输入的指令数据不合法，请您重新输入！ ERROR:0x0d" << std::endl;
                             return 0;
                         case 0:
                             std::cout << "执行代号" << enemy_positionArray[from_position]->id_get() << "角色普攻成功\n";
                             result = *enemy_positionArray[from_position]->normal(from_position, to_position, enemyCombatArray, friendCombatArray);
-                            enemy_positionArray[from_position]->skillpoint++;
+                            if(enemy_positionArray[from_position]->skillpoint<5) enemy_positionArray[from_position]->skillpoint++;
                             break;
                         case -2:
-                            std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色普攻应作用于同一阵营角色，请您重新输入！\n";
+                            std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色普攻应作用于同一阵营角色，请您重新输入！ERROR:0x13\n";
                             return 0;
                         case -3:
-                            std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色普攻应作用于对手阵营角色，请您重新输入！\n";
+                            std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色普攻应作用于对手阵营角色，请您重新输入！ERROR:0x14\n";
                             return 0;
                     }
                 }
             } else {
                 if (from_team == 0){
-                    std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色不属于当前额外回合，无法行动" << std::endl;
+                    std::cerr << "代号" << friend_positionArray[from_position]->code_get() << "角色不属于当前额外回合，无法行动。ERROR:0x06" << std::endl;
                     return 0;
                 } else {
-                    std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色不属于当前额外回合，无法行动" << std::endl;
+                    std::cerr << "代号" << enemy_positionArray[from_position]->code_get() << "角色不属于当前额外回合，无法行动。ERROR:0x06" << std::endl;
                     return 0;
                 }
             }
         } else if (skill == "ultra"){
-            std::cerr << "处于额外回合，终结技释放无效" << std::endl;
+            std::cerr << "处于额外回合，终结技释放无效。ERROR: 0x08" << std::endl;
             return 0;
         } else {
-            std::cerr << "输入的指令行动不合法，请您重新输入！ ERROR:0x09";
+            std::cerr << "输入的指令行动不合法，请您重新输入！  ERROR:0x0d";
             return 0;
         }
     }
@@ -1085,7 +1085,7 @@ bool Execute(std::string input, int m, int n, bool team, int turn, std::vector<F
 // 判断游戏是否结束
 bool isGameFinish(std::vector<FriendCharacter*> friend_positionArray, std::vector<EnemyCharacter*> enemy_positionArray){
     if (friend_positionArray.size() == 0 && enemy_positionArray.size() == 0){
-        throw std::runtime_error("错误：双方队列均为空");
+        throw std::runtime_error("错误：双方队列均为空。ERROR:0x0c");
         return true;
     } else if (friend_positionArray.size() == 0 && enemy_positionArray.size() != 0) {
         std::cout << "敌方获胜，游戏结束" << std::endl;
@@ -1134,7 +1134,7 @@ bool mainGame(int m, int n, std::vector<FriendCharacter> friends, std::vector<En
         // 输出进度条
         std::cout << "角色行动条：" << std::endl;
         for (auto& pair : waitingQueue) {
-            std::cout << pair.first->name_get() << " \t (代号 " << pair.first->code_get() << ")  \t剩余行动时间为： " << pair.first->time_get() << std::endl;
+            std::cout << pair.first->name_get() << " \t (代号 " << pair.first->code_get() << ")  \t剩余行动时间为: " << pair.first->time_get() << std::endl;
         }
         if(team ==0){
             std::cout<<"我方战技点为"<<FriendCharacter::skillpoint<<std::endl;

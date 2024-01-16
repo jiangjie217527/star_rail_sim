@@ -69,6 +69,7 @@ void DamageResult_with_Bailu_talent(int from, int to, std::vector<CombatCharacte
 void DamageResult_with_Fuxuan_talent(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters, double damage);
 double Exact_def(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters);
 short IfKill(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters);
+bool If_Kill_back(int from, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters);
 void SkillFunction_1001_addShield(CombatCharacter& character, double value);
 void SkillFunction_1001_removeShield(CombatCharacter& character, double value);
 bool Frozen_status(int form, int to, std::vector<CombatCharacter*>& FromCharacters, std::vector<CombatCharacter*>& ToCharacters);
